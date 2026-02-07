@@ -35,6 +35,8 @@ export default function BuyerDashboard() {
   // ─── Jobs & Agents ─────────────────────────────────────────────
   const [jobs, setJobs] = useState<Job[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [credits, setCredits] = useState<number | null>(null);
+
 
   /* ===================== Upload Job ===================== */
   const handleUpload = async () => {
@@ -64,6 +66,24 @@ export default function BuyerDashboard() {
       setUploadStatus('Upload failed');
     }
   };
+/* ===================== Fetch Wallet ===================== */
+const fetchWallet = async () => {
+  if (!user) return;
+
+  const res = await fetch(`${API_BASE}/wallet/${user.id}`, {
+    headers: {
+      "ngrok-skip-browser-warning": "69420",
+    },
+  });
+
+  if (!res.ok) {
+    console.error(await res.text());
+    return;
+  }
+
+  const data = await res.json();
+  setCredits(data.credits);
+};
 
   /* ===================== Fetch Jobs ===================== */
 const fetchJobs = async () => {
@@ -97,9 +117,10 @@ const fetchAgents = async () => {
 };
 
   /* ===================== Polling ===================== */
- useEffect(() => {
+useEffect(() => {
   if (!user) return;
 
+  fetchWallet();
   fetchJobs();
   fetchAgents();
 
@@ -110,6 +131,7 @@ const fetchAgents = async () => {
 
   return () => clearInterval(interval);
 }, [user]);
+
 
 
   /* ===================== Download Result ===================== */
@@ -142,7 +164,13 @@ const fetchAgents = async () => {
   <header className={styles.header}>
     <h1>Scientist Workstation</h1>
     <p>Submit jobs, monitor progress, and explore available compute.</p>
+    
+  <div className={styles.wallet}>
+    <span>Wallet Balance</span>
+    <strong>{credits !== null ? `${credits} credits` : '0'}</strong>
+  </div>
   </header>
+  
 
   <div className={styles.grid}>
     {/* Upload */}

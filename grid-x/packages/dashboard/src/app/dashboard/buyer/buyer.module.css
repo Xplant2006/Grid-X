@@ -56,6 +56,30 @@
     letter-spacing: 1px;
 }
 
+.wallet {
+  margin-top: 1rem;
+  padding: 1rem 1.4rem;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.wallet span {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+}
+
+.wallet strong {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+
 /* Editor */
 .editor {
     flex: 1;
