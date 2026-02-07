@@ -6,6 +6,7 @@ from typing import Optional
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    role: Optional[str] = "buyer"  # Default role is buyer
 
 # WHAT YOU SEND BACK (Hide the password!)
 class UserResponse(BaseModel):
@@ -76,3 +77,9 @@ class TaskComplete(BaseModel):
     agent_id: str
     task_id: int
     result_url: str  # The Supabase URL where the agent uploaded the result
+
+class JobResultResponse(BaseModel):
+    job_id: int
+    title: str
+    status: str
+    final_result_url: Optional[str] = None # Will be null if job isn't finished

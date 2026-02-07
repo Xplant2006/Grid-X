@@ -20,7 +20,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
     new_user = models.User(
         email=user.email,
         password=user.password,  # Stored directly as plain text
-        role="buyer",            # Default role
+        role=user.role,            # Default role
         created_at=datetime.now(timezone.utc)
     )
 

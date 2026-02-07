@@ -5,17 +5,18 @@ import pandas as pd
 import io
 import os
 from datetime import datetime
-from .. import models, database
+from .. import models, database, schemas
 import shutil
 import time
 from typing import List
+from datetime import timezone
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
 # Load from environment variables for security
 # Create a .env file based on .env.example
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://ryhjmgehgshyuzqhcgwz.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "YOUR_SERVICE_ROLE_KEY_HERE")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5aGptZ2VoZ3NoeXV6cWhjZ3d6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDM5MTU5MSwiZXhwIjoyMDg1OTY3NTkxfQ.8q_-WKlxj1_dngzHKE6fUmPUch_QjEIXqFZbnZv5S7w")
 BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME", "gridx-files")
 
 # Initialize Supabase
@@ -97,7 +98,7 @@ def split_csv_and_create_subtasks(job_id: int, csv_content: bytes, db: Session):
         
         # F. Update Job Status
         job = db.query(models.Job).filter(models.Job.id == job_id).first()
-        job.status = "RUNNING"
+        job.status = "COMPLETED"
         db.commit()
         print(f"✅ [Job {job_id}] Split complete! Created {num_chunks} subtasks. Status: RUNNING.")
 
@@ -177,3 +178,31 @@ def get_my_jobs(user_id: int, db: Session = Depends(database.get_db)):
     
     # 2. Return them (FastAPI converts them to JSON automatically)
     return jobs
+
+@router.get("/download/{job_id}", response_model=schemas.JobResultResponse)
+def get_final_job_result(job_id: int, user_id: int, db: Session = Depends(database.get_db)):
+    """
+    Called by the Buyer Frontend to get the final download link.
+    """
+    # 1. Fetch the job
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+
+    # 2. Safety Check: Does the job exist?
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    # 3. Security Check: Does the user_id match the job's owner_id?
+    # This prevents User A from guessing User B's job ID and stealing their data.
+    if job.owner_id != user_id:
+        raise HTTPException(
+            status_code=403, 
+            detail="Unauthorized: You do not own this job."
+        )
+
+    # 4. Return the result
+    return {
+        "job_id": job.id,
+        "title": job.title,
+        "status": job.status,
+        "final_result_url": job.final_result_url
+    }
