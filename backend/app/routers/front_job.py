@@ -5,7 +5,7 @@ import pandas as pd
 import io
 import os
 from datetime import datetime
-from .. import models, database
+from .. import models, database, schemas
 import shutil
 import time
 from typing import List

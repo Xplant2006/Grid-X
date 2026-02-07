@@ -1,12 +1,20 @@
+# Load environment variables FIRST, before any other imports
+# This ensures env vars are available when routers are imported
+from dotenv import load_dotenv
+import os
+from pathlib import Path
+
+# Get the project root (3 levels up from this file: app/main.py -> app -> backend -> project_root)
+project_root = Path(__file__).parent.parent.parent
+env_file = project_root / '.env'
+load_dotenv(env_file)
+
+# Now import everything else
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 from .database import engine, Base
 # Import the routers we created
 from .routers import front_auth, front_job, sellers, agent
-
-# Load environment variables from .env file
-load_dotenv()
 
 # ==========================================
 # 1. INITIALIZE DATABASE

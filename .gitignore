@@ -1,4 +1,24 @@
+# ==========================================
+# Grid-X .gitignore
+# ==========================================
+
+# ==========================================
+# CRITICAL: Secrets and Credentials
+# ==========================================
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+!worker_config.env.example
+
+# Supabase keys (if accidentally hardcoded)
+*supabase_key*
+*service_role*
+
+# ==========================================
 # Python
+# ==========================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -26,65 +46,121 @@ share/python-wheels/
 venv/
 ENV/
 env/
+.virtualenv/
 
-# Database files
+# ==========================================
+# Database Files
+# ==========================================
 *.db
 *.sqlite
 *.sqlite3
 sql_app.db
+backend/sql_app.db
+backend/app/sql_app.db
 
-# Supabase credentials (IMPORTANT!)
-# Note: You should use environment variables instead of hardcoded keys
-# backend/app/routers/front_job.py contains sensitive keys - consider using .env
+# ==========================================
+# Logs and Output Files
+# ==========================================
+*.log
+backend.log
+test_output.log
+worker.log
+uvicorn.log
+*.out
 
-# IDE
+# Test outputs
+test_results/
+coverage/
+
+# ==========================================
+# Docker
+# ==========================================
+*.tar
+*.gz
+docker-compose.override.yml
+
+# ==========================================
+# IDE and Editors
+# ==========================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
+*.sublime-project
+*.sublime-workspace
 
-# Logs
-*.log
-backend.log
-test_output.log
+# ==========================================
+# OS Files
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# Docker
-*.tar
-*.gz
-
-# Test artifacts
+# ==========================================
+# Test Artifacts
+# ==========================================
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# Temporary files
+# ==========================================
+# Temporary Files
+# ==========================================
 *.tmp
 *.bak
 *.swp
 tmp/
 temp/
+*.cache
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Node modules (if any frontend)
+# ==========================================
+# Node/Frontend (if applicable)
+# ==========================================
 node_modules/
-grid-x/node_modules/
-grid-x/.next/
-grid-x/out/
-grid-x/build/
+.next/
+out/
+build/
+.nuxt/
+dist/
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# ==========================================
+# Uploaded Files and User Data
+# ==========================================
+uploads/
+user_data/
+jobs/*/
+results/
 
-# Diagnostic scripts (optional - remove if you want to commit them)
+# ==========================================
+# Development and Testing Scripts
+# ==========================================
+# Keep test scripts but exclude their outputs
+scratch.py
+debug.py
+test_local.py
+
+# ==========================================
+# Production Deployment
+# ==========================================
+.railway/
+.vercel/
+.netlify/
+
+# ==========================================
+# Backup Files
+# ==========================================
+*.backup
+*.old
+backup/
+
+# Personal debugging scripts (not needed in repo)
 check_db.py
 quick_test.py
 test_supabase.py
