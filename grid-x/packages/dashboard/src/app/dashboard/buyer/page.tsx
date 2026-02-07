@@ -116,7 +116,7 @@ const fetchAgents = async () => {
   const downloadResult = async (jobId: number) => {
     try {
       const res = await fetch(
-        `${API_BASE}/jobs/download?user_id=${user?.id}&job_id=${jobId}`
+        `${API_BASE}/jobs/download/${jobId}`
       );
 
       if (!res.ok) {

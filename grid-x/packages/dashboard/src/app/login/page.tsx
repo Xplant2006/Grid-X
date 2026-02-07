@@ -40,9 +40,9 @@ export default function LoginPage() {
             setUser(user);
 
             // Redirect based on backend role
-            if (user.role === 'buyer') {
+            if (user.role==='buyer') {
                 router.push('/dashboard/buyer');
-            } else {
+            } else if(user.role==='seller') {
                 router.push('/dashboard/seller');
             }
         } catch (err) {
