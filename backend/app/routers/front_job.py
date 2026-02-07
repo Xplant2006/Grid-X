@@ -98,7 +98,7 @@ def split_csv_and_create_subtasks(job_id: int, csv_content: bytes, db: Session):
         
         # F. Update Job Status
         job = db.query(models.Job).filter(models.Job.id == job_id).first()
-        job.status = "COMPLETED"
+        job.status = "RUNNING"
         db.commit()
         print(f"✅ [Job {job_id}] Split complete! Created {num_chunks} subtasks. Status: RUNNING.")
 
