@@ -8,7 +8,7 @@ export default function Home() {
         <div className={styles.logo}>Grid-X</div>
         <nav>
           <Link href="/login" className={styles.navLink}>Login</Link>
-          <Link href="https://github.com/example/grid-x" className={styles.navLink}>GitHub</Link>
+          <Link href="https://github.com/Xplant2006/Grid-X" className={styles.navLink}>GitHub</Link>
         </nav>
       </header>
 
@@ -27,7 +27,7 @@ export default function Home() {
             Get Started
           </Link>
           <Link href="/docs" className={`${styles.btn} ${styles.secondary}`}>
-            Read the Docs
+            Documentation
           </Link>
         </div>
       </main>

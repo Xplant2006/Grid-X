@@ -1,5 +1,6 @@
-// This is a simple in-memory database for the MVP.
-// In a real app, this would be SQLite or Postgres.
+// ⚠️ Deprecated: Backend logic moved to FastAPI.
+// Do not use this store in production.
+
 
 export interface Node {
     id: string;
