@@ -69,21 +69,24 @@ export default function BuyerDashboard() {
 const fetchJobs = async () => {
   if (!user) return;
 
-  const res = await fetch(`${API_BASE}/jobs/list/${user.id}`);
+  const res = await fetch(`${API_BASE}/jobs/list/${user.id}`, {
+    headers: {
+      "ngrok-skip-browser-warning": "69420", // The value can be anything
+    },
+  });
 
-  if (!res.ok) {
-    console.error(await res.text());
-    return;
-  }
-
+  if (!res.ok) return;
   const data = await res.json();
   setJobs(data);
 };
 
-
   /* ===================== Fetch Agents ===================== */
 const fetchAgents = async () => {
-  const res = await fetch(`${API_BASE}/stats/agents/online`);
+  const res = await fetch(`${API_BASE}/stats/agents/online`, {
+    headers: {
+      "ngrok-skip-browser-warning": "69420", // The value can be anything
+    },
+  });
   if (!res.ok) {
     console.error(await res.text());
     return;
