@@ -138,9 +138,15 @@ if [ -z "$BACKEND_URL" ]; then
     exit 1
 fi
 
+# Support WORKER_ID as alias for AGENT_ID
+if [ -z "$AGENT_ID" ] && [ -n "$WORKER_ID" ]; then
+    AGENT_ID="$WORKER_ID"
+fi
+
 if [ -z "$AGENT_ID" ]; then
-    echo "❌ AGENT_ID not set in worker_config.env"
-    exit 1
+    # Auto-generate if missing
+    AGENT_ID="worker_$(hostname)_$(date +%s)"
+    echo "⚠️  AGENT_ID/WORKER_ID not set. Using auto-generated: $AGENT_ID"
 fi
 
 echo "🚀 Starting Grid-X Worker"

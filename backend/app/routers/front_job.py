@@ -27,17 +27,33 @@ router = APIRouter()
 # 2. HELPER: UPLOAD TO SUPABASE
 # ==========================================
 def upload_bytes_to_supabase(file_bytes: bytes, destination_path: str, content_type: str):
-    """Uploads raw bytes to Supabase Storage and returns the public URL."""
-    try:
-        supabase.storage.from_(BUCKET_NAME).upload(
-            path=destination_path,
-            file=file_bytes,
-            file_options={"content-type": content_type, "x-upsert": "true"}
-        )
-        return supabase.storage.from_(BUCKET_NAME).get_public_url(destination_path)
-    except Exception as e:
-        print(f"❌ Upload Error: {e}")
-        raise HTTPException(status_code=500, detail="File upload failed")
+    """Uploads raw bytes to Supabase Storage with RETRY logic."""
+    MAX_RETRIES = 3
+    last_error = None
+    
+    for attempt in range(MAX_RETRIES):
+        try:
+            # Create bucket if not exists? No, bucket should exist.
+            # BUCKET_NAME is global
+            
+            # Note: storage.from_() creates bucket object, .upload() performs action
+            res = supabase.storage.from_(BUCKET_NAME).upload(
+                path=destination_path,
+                file=file_bytes,
+                file_options={"content-type": content_type, "x-upsert": "true"}
+            )
+            # If successful, returns response object (usually dict or list)
+            
+            # Get Public URL
+            return supabase.storage.from_(BUCKET_NAME).get_public_url(destination_path)
+            
+        except Exception as e:
+            print(f"⚠️ Upload Attempt {attempt+1}/{MAX_RETRIES} Failed: {e}")
+            last_error = e
+            time.sleep(2) # Wait 2 seconds before retry
+            
+    print(f"❌ Final Upload Error: {last_error}")
+    raise HTTPException(status_code=500, detail=f"File upload failed: {last_error}")
 
 # ==========================================
 # 3. BACKGROUND TASK: SPLITTER
@@ -177,3 +193,30 @@ def get_my_jobs(user_id: int, db: Session = Depends(database.get_db)):
     
     # 2. Return them (FastAPI converts them to JSON automatically)
     return jobs
+
+@router.get("/{job_id}")
+def get_job_status(job_id: int, db: Session = Depends(database.get_db)):
+    """
+    Get the status of a specific job.
+    Includes calculated fields for progress.
+    """
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Calculate progress
+    total_subtasks = db.query(models.Subtask).filter(models.Subtask.job_id == job_id).count()
+    completed_subtasks = db.query(models.Subtask).filter(
+        models.Subtask.job_id == job_id, 
+        models.Subtask.status == "COMPLETED"
+    ).count()
+
+    return {
+        "id": job.id,
+        "title": job.title,
+        "status": job.status,
+        "created_at": job.created_at,
+        "final_result_url": job.final_result_url,
+        "total_subtasks": total_subtasks,
+        "completed_subtasks": completed_subtasks
+    }
