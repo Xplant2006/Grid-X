@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func, Float
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -10,14 +10,18 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    password = Column(String)  # Storing plain text as requested (no hashing)
+    password = Column(String) 
     role = Column(String, default="buyer")
+    
+    # --- NEW ATTRIBUTE ---
+    # Defaulting to 0.0 or a starting bonus like 100.0 for testing
+    credits = Column(Float, default=0.0) 
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # RELATIONSHIPS
     jobs = relationship("Job", back_populates="owner")
-    agents = relationship("Agent", back_populates="owner") # Renamed from 'devices' to 'agents'
-
+    agents = relationship("Agent", back_populates="owner")
 
 # ==========================================
 # 2. AGENTS TABLE (Previously Sellers)

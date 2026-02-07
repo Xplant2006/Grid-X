@@ -1,25 +1,23 @@
-# Backend API Guide for Frontend Developers
+# Grid-X Frontend API Guide
 
-This guide details the API endpoints available for the frontend application. The backend is built with FastAPI.
+This document details the API endpoints available for the frontend application. The base URL (e.g., `http://localhost:8000`) should be prepended to all paths.
 
-**Base URL**: `http://localhost:8000` (or your deployed URL)
-
-## 1. Authentication (`/auth`)
-Defined in `app/routers/front_auth.py`.
+## 1. Authentication & User Profile
 
 ### Register User
-Create a new user account.
+Creates a new user account.
 
-- **Endpoint**: `POST /auth/register`
-- **Content-Type**: `application/json`
-- **Request Body**:
+- **Endpoint**: `POST /register`
+- **Description**: Registers a new user with email and password.
+- **Request Body** (JSON):
   ```json
   {
     "email": "user@example.com",
-    "password": "secretpassword"
+    "password": "securepassword",
+    "role": "buyer" // Optional, default is "buyer"
   }
   ```
-- **Response**: `200 OK`
+- **Response** (JSON):
   ```json
   {
     "id": 1,
@@ -29,21 +27,22 @@ Create a new user account.
   }
   ```
 - **Errors**:
-  - `400 Bad Request`: Email already registered.
+  - `400 Bad Request`: "Email already registered"
 
 ### Login User
-Authenticate a user.
+Authenticates a user.
 
-- **Endpoint**: `POST /auth/login`
-- **Content-Type**: `application/json`
-- **Request Body**:
+- **Endpoint**: `POST /login`
+- **Description**: Verifies email and password.
+- **Request Body** (JSON):
   ```json
   {
     "email": "user@example.com",
-    "password": "secretpassword"
+    "password": "securepassword"
   }
   ```
-- **Response**: `200 OK`
+- **Response** (JSON):
+  Returns the user object on success.
   ```json
   {
     "id": 1,
@@ -53,105 +52,161 @@ Authenticate a user.
   }
   ```
 - **Errors**:
-  - `401 Unauthorized`: Invalid email or password.
+  - `401 Unauthorized`: "Invalid email or password"
+
+### Get Wallet Balance
+Retrieves the credit balance and role for a user.
+
+- **Endpoint**: `GET /wallet/{user_id}`
+- **Description**: Fetches current credits.
+- **Path Parameters**:
+  - `user_id`: Integer ID of the user.
+- **Response** (JSON):
+  ```json
+  {
+    "user_id": 1,
+    "credits": 100.0,
+    "role": "buyer"
+  }
+  ```
+- **Errors**:
+  - `404 Not Found`: "User not found"
 
 ---
 
-## 2. Jobs (`/jobs`)
-Defined in `app/routers/front_job.py`.
+## 2. Jobs (Buyer Operations)
 
-### Upload New Job
-Upload code, requirements, and data to start a new processing job.
+### Upload Job
+Submits a new job with code, requirements, and data files.
 
-- **Endpoint**: `POST /jobs/upload`
-- **Content-Type**: `multipart/form-data`
-- **Form Data**:
-  - `title` (text): Title of the job.
-  - `user_id` (text/int): ID of the user submitting the job.
-  - `file_code` (file): Python script (e.g., `train.py`).
-  - `file_req` (file): Requirements file (e.g., `requirements.txt`).
-  - `file_data` (file): CSV data file (e.g., `data.csv`).
-- **Response**: `200 OK`
+- **Endpoint**: `POST /upload`
+- **Description**: Uploads a job. Splits the data file in the background.
+- **Request Body** (multipart/form-data):
+  - `title`: (text) Title of the job.
+  - `user_id`: (text/int) ID of the user submitting the job.
+  - `file_code`: (file) Python script (e.g., `train.py`).
+  - `file_req`: (file) Requirements file (e.g., `requirements.txt`).
+  - `file_data`: (file) Data CSV file (e.g., `data.csv`).
+- **Response** (JSON):
   ```json
   {
-    "job_id": 12,
+    "job_id": 123,
     "message": "Upload successful! Splitting data in background.",
     "status": "PROCESSING"
   }
   ```
 
 ### List My Jobs
-Get a list of all jobs submitted by a specific user.
+Retrieves all jobs created by a specific user.
 
-- **Endpoint**: `GET /jobs/list/{user_id}`
+- **Endpoint**: `GET /list/{user_id}`
+- **Description**: returns a list of jobs.
 - **Path Parameters**:
   - `user_id`: Integer ID of the user.
-- **Response**: `200 OK`
+- **Response** (JSON Array):
   ```json
   [
     {
-      "id": 12,
+      "id": 1,
       "title": "My Training Job",
-      "status": "PROCESSING",
-      "created_at": "2023-10-27T10:05:00Z",
+      "status": "COMPLETED", // PROCESSING, RUNNING, COMPLETED, ERROR
+      "created_at": "2023-10-27T10:00:00Z",
       "original_code_url": "https://...",
-      "original_data_url": "https://..."
-    }
+      "original_data_url": "https://...",
+      "final_result_url": "https://..." // Null if not complete
+    },
+    ...
   ]
   ```
 
+### Download Job Result
+Gets the direct download link for a completed job result.
+
+- **Endpoint**: `GET /download/{job_id}`
+- **Description**: returns the final result URL if the job is complete and belongs to the user.
+- **Query Parameters**:
+  - `user_id`: (integer) ID of the user requesting the download (for verification).
+- **Response** (JSON):
+  ```json
+  {
+    "job_id": 1,
+    "title": "My Training Job",
+    "status": "COMPLETED",
+    "final_result_url": "https://supabase..."
+  }
+  ```
+- **Errors**:
+  - `404 Not Found`: "Job not found"
+  - `403 Forbidden`: "Unauthorized: You do not own this job."
+
 ---
 
-## 3. Sellers / Agents (`/sellers`)
-Defined in `app/routers/sellers.py`.
+## 3. Marketplace & Agents (Seller Operations)
 
-### List Online Agents
-Get a list of currently active agents (sellers) available for work.
+### Get Online Agents
+Lists legitimate active agents on the network.
 
-- **Endpoint**: `GET /sellers/agents/online`
-- **Response**: `200 OK`
+- **Endpoint**: `GET /agents/online`
+- **Description**: Returns agents that have sent a heartbeat in the last 5 minutes.
+- **Response** (JSON Array):
   ```json
   [
     {
-      "id": "agent_uuid_123",
-      "status": "IDLE",
-      "gpu_model": "RTX 3090",
+      "id": "agent_uuid_...",
+      "status": "IDLE", // IDLE, BUSY, OFFLINE
+      "gpu_model": "NVIDIA RTX 3090",
       "ram_total": "32GB",
-      "last_heartbeat": "2023-10-27T10:10:00Z"
-    }
+      "last_heartbeat": "2023-10-27T10:05:00Z"
+    },
+    ...
   ]
   ```
 
-## Notes
-- **TimESTAMPS**: All timestamps are returned in ISO 8601 format (UTC).
-- **Status Codes**: 
-    - `200`: Success
-    - `400`: Client Error (Bad Input)
-    - `401`: Unauthorized
-    - `404`: Not Found
-    - `500`: Server Error
+### Get My Agents
+Lists all agents owned by a specific user (Seller).
 
----
+- **Endpoint**: `GET /my-agents/{user_id}`
+- **Description**: Shows all agents registered to this user account.
+- **Path Parameters**:
+  - `user_id`: Integer ID of the user.
+- **Response** (JSON):
+  ```json
+  {
+    "user_id": 1,
+    "agents": [
+      {
+        "id": "agent_uuid_...",
+        "status": "IDLE",
+        "gpu_model": "NVIDIA RTX 3090",
+        "ram_total": "32GB",
+        "last_heartbeat": "2023-10-27T10:05:00Z"
+      }
+    ]
+  }
+  ```
 
-## 4. Common Workflows
+### Get Seller Tasks
+Lists tasks assigned to a seller's agents.
 
-### A. User Signup & Login
-1. **Sign Up**: Frontend collects email/password -> `POST /auth/register`.
-2. **Login**: Frontend collects email/password -> `POST /auth/login`. 
-   - **Store the `id`** (User ID) from the response in `localStorage` or Context. You will need this for uploading jobs.
-
-### B. Submitting a Job
-1. User selects files (Python script, Requirements, Data CSV).
-2. User enters a Title.
-3. Frontend retrieves `user_id` from storage.
-4. **Upload**: Construct `FormData` -> `POST /jobs/upload`.
-5. Display the returned `job_id` and status ("PROCESSING") to the user.
-
-### C. Monitoring Jobs
-1. **Poll for Updates**: Use `GET /jobs/list/{user_id}` to show the user's dashboard.
-2. The `status` field will change from `PROCESSING` -> `RUNNING` -> `COMPLETED`.
-3. When `COMPLETED`, you (the frontend) might want to show a download button (logic for results download depends on the `Subtask` flow, usually you'd query specific subtask results, but for now `jobs/list` gives the high-level status).
-
-### D. Finding Sellers
-1. **Show Network Status**: `GET /sellers/agents/online`.
-2. Display a grid/list of available GPUs to show the user the network is alive.
+- **Endpoint**: `GET /seller-tasks/{user_id}`
+- **Description**: Returns all subtasks worked on by any agent owned by this user.
+- **Path Parameters**:
+  - `user_id`: Integer ID of the user.
+- **Response** (JSON):
+  ```json
+  {
+    "user_id": 1,
+    "total_completed": 5,
+    "tasks": [
+      {
+        "id": 101,
+        "job_id": 1,
+        "assigned_to": "agent_uuid_...",
+        "status": "COMPLETED",
+        "result_file_url": "https://...",
+        "completed_at": "2023-10-27T10:30:00Z"
+      },
+      ...
+    ]
+  }
+  ```
