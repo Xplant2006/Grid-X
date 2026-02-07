@@ -46,7 +46,7 @@ def get_seller_tasks(user_id: int, db: Session = Depends(database.get_db)):
 @router.get("/my-agents/{user_id}", response_model=schemas.AgentListResponse)
 def get_user_agents(user_id: int, db: Session = Depends(database.get_db)):
     # 1. Query all agents belonging to this user
-    agents = db.query(models.ModelsAgent).filter(models.ModelsAgent.owner_id == user_id).all()
+    agents = db.query(models.Agent).filter(models.Agent.owner_id == user_id).all()
     
     # 2. Return the list formatted by our schema
     return {
