@@ -1,6 +1,7 @@
 import torch
 import requests
 import io
+import time
 from sqlalchemy.orm import Session
 from . import models
 from .routers.front_job import upload_bytes_to_supabase
@@ -30,18 +31,33 @@ def aggregate_pytorch_weights(job_id: int, db: Session) -> str:
     
     # 2. Download all model weights
     model_weights = []
+    
     for subtask in subtasks:
         if not subtask.result_file_url:
             continue
             
         print(f"⬇️ Downloading result from {subtask.result_file_url}...")
-        resp = requests.get(subtask.result_file_url)
-        if resp.status_code == 200:
-            # Load the model weights
-            weights = torch.load(io.BytesIO(resp.content), map_location='cpu')
-            model_weights.append(weights)
-        else:
-            print(f"⚠️  Failed to download from {subtask.result_file_url}")
+        
+        # Validating download with retries
+        success = False
+        for attempt in range(3):
+            try:
+                resp = requests.get(subtask.result_file_url, timeout=30)
+                if resp.status_code == 200:
+                    # Load the model weights
+                    weights = torch.load(io.BytesIO(resp.content), map_location='cpu')
+                    model_weights.append(weights)
+                    success = True
+                    break
+                else:
+                    print(f"⚠️  Status {resp.status_code}. Retrying...")
+                    time.sleep(1)
+            except Exception as e:
+                print(f"⚠️  Download error (Attempt {attempt+1}): {e}")
+                time.sleep(1)
+        
+        if not success:
+            print(f"❌ Could not download weights for subtask {subtask.id}. Skipping.")
     
     if not model_weights:
         raise Exception("No model weights could be downloaded")
