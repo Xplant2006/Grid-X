@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+# Create non-root user for security
+RUN useradd -m -u 1000 sandbox && \
+    mkdir -p /app && \
+    chown sandbox:sandbox /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PyTorch CPU-only version (much smaller than CUDA version)
+# CPU-only: ~200MB vs CUDA: ~2-3GB
+RUN pip install --no-cache-dir \
+    torch==2.1.0+cpu \
+    -f https://download.pytorch.org/whl/torch_stable.html
+
+# Install other common ML libraries
+RUN pip install --no-cache-dir \
+    pandas==2.1.0 \
+    numpy==1.24.0 \
+    scikit-learn==1.3.0
+
+# Set working directory
+WORKDIR /app
+
+# Switch to non-root user
+USER sandbox
+
+# Default command
+CMD ["python3"]

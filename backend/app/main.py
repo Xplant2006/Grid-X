@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 from .database import engine, Base
 # Import the routers we created
 from .routers import front_auth, front_job, sellers, agent
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ==========================================
 # 1. INITIALIZE DATABASE

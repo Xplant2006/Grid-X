@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+import time
 from .. import database, models, schemas
+from ..aggregation import aggregate_pytorch_weights
+from .front_job import upload_bytes_to_supabase
+
 
 router = APIRouter()
 
@@ -129,6 +133,36 @@ def request_task(data: schemas.TaskRequest, db: Session = Depends(database.get_d
         "chunk_data_url": subtask.chunk_file_url  # The specific slice of data
     }
 
+@router.post("/upload_result")
+async def upload_result(
+    agent_id: str = Form(...),
+    task_id: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db)
+):
+    """
+    Worker uploads the result file (model.pth) directly.
+    """
+    # 1. Verify Task Ownership
+    subtask = db.query(models.Subtask).filter(models.Subtask.id == task_id).first()
+    if not subtask:
+        raise HTTPException(status_code=404, detail="Subtask not found")
+        
+    # Optional: Verify agent_id matches subtask.assigned_to 
+    
+    # 2. Read File
+    file_bytes = await file.read()
+    
+    # 3. Upload to Supabase
+    # Path: jobs/{job_id}/results/{task_id}_model.pth
+    file_path = f"jobs/{subtask.job_id}/results/{task_id}_model.pth"
+    
+    # We use application/octet-stream for .pth files
+    url = upload_bytes_to_supabase(file_bytes, file_path, "application/octet-stream")
+    
+    return {"url": url}
+
+
 @router.post("/complete_task")
 def complete_task(data: schemas.TaskComplete, db: Session = Depends(database.get_db)):
     """
@@ -172,6 +206,13 @@ def complete_task(data: schemas.TaskComplete, db: Session = Depends(database.get
         if parent_job:
             parent_job.status = "COMPLETED"
             print(f"🎉 Job {parent_job.id} is fully COMPLETE!")
+            
+            # TRIGGER AGGREGATION
+            try:
+                final_url = aggregate_pytorch_weights(parent_job.id, db)
+                parent_job.final_result_url = final_url
+            except Exception as e:
+                print(f"❌ Aggregation Failed: {e}")
 
     db.commit()
     

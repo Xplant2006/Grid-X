@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 from .. import models, database, schemas
 
 router = APIRouter()
@@ -21,7 +21,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         email=user.email,
         password=user.password,  # Stored directly as plain text
         role="buyer",            # Default role
-        created_at=datetime.timezone.utc.now()
+        created_at=datetime.now(timezone.utc)
     )
 
     # 3. Save to Database

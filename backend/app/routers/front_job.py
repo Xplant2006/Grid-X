@@ -1,20 +1,22 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
-from .. import database, models, schemas
-import shutil
-import os
-import io
-import time
-import pandas as pd
 from supabase import create_client
+import pandas as pd
+import io
+import os
+from datetime import datetime
+from .. import models, database
+import shutil
+import time
 from typing import List
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
-# REPLACE WITH YOUR ACTUAL KEYS!
-SUPABASE_URL = "https://ryhjmgehgshyuzqhcgwz.supabase.co"
-SUPABASE_KEY = "sb_publishable_O1gBSZCqAYSosVSclzYEQg_NdzMeMiw"
-BUCKET_NAME = "gridx-files"
+# Load from environment variables for security
+# Create a .env file based on .env.example
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://ryhjmgehgshyuzqhcgwz.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "YOUR_SERVICE_ROLE_KEY_HERE")
+BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME", "gridx-files")
 
 # Initialize Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -46,16 +48,20 @@ def split_csv_and_create_subtasks(job_id: int, csv_content: bytes, db: Session):
     and creates Subtask rows in the database.
     """
     print(f"🔪 [Job {job_id}] Starting background split...")
+    print(f"   CSV size: {len(csv_content)} bytes")
     
     try:
         # A. Load CSV
+        print(f"   Loading CSV into pandas...")
         df = pd.read_csv(io.BytesIO(csv_content))
         total_rows = len(df)
         num_chunks = 5  # Fixed for Hackathon
         chunk_size = total_rows // num_chunks
+        print(f"   ✅ Loaded {total_rows} rows, splitting into {num_chunks} chunks")
         
         # B. Loop and Split
         for i in range(num_chunks):
+            print(f"   Processing chunk {i+1}/{num_chunks}...")
             start = i * chunk_size
             # If last chunk, take everything till the end
             if i == num_chunks - 1:
@@ -67,10 +73,17 @@ def split_csv_and_create_subtasks(job_id: int, csv_content: bytes, db: Session):
             buffer = io.BytesIO()
             subset.to_csv(buffer, index=False)
             chunk_bytes = buffer.getvalue()
+            print(f"      Chunk {i}: {len(subset)} rows, {len(chunk_bytes)} bytes")
             
             # D. Upload Chunk
             chunk_path = f"jobs/{job_id}/chunks/chunk_{i}.csv"
-            chunk_url = upload_bytes_to_supabase(chunk_bytes, chunk_path, "text/csv")
+            print(f"      Uploading to: {chunk_path}")
+            try:
+                chunk_url = upload_bytes_to_supabase(chunk_bytes, chunk_path, "text/csv")
+                print(f"      ✅ Uploaded: {chunk_url[:60]}...")
+            except Exception as upload_error:
+                print(f"      ❌ Upload failed: {upload_error}")
+                raise
             
             # E. Create Subtask in DB
             new_subtask = models.Subtask(
@@ -80,16 +93,27 @@ def split_csv_and_create_subtasks(job_id: int, csv_content: bytes, db: Session):
                 chunk_file_url=chunk_url
             )
             db.add(new_subtask)
+            print(f"      ✅ Subtask {i+1} created")
         
         # F. Update Job Status
         job = db.query(models.Job).filter(models.Job.id == job_id).first()
         job.status = "RUNNING"
         db.commit()
-        print(f"✅ [Job {job_id}] Split complete! Status: RUNNING.")
+        print(f"✅ [Job {job_id}] Split complete! Created {num_chunks} subtasks. Status: RUNNING.")
 
     except Exception as e:
         print(f"❌ [Job {job_id}] Splitting Failed: {e}")
+        print(f"   Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
         # Optional: Set job status to ERROR in DB
+        try:
+            job = db.query(models.Job).filter(models.Job.id == job_id).first()
+            if job:
+                job.status = "ERROR"
+                db.commit()
+        except:
+            pass
 
 # ==========================================
 # 4. THE ENDPOINT

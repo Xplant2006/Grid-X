@@ -31,6 +31,7 @@ class JobResponse(BaseModel):
     # Optional: Include these if you want to show download links in the list
     original_code_url: str
     original_data_url: str
+    final_result_url: Optional[str] = None
 
     class Config:
         from_attributes = True
