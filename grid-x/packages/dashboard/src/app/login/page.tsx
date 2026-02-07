@@ -85,13 +85,21 @@ export default function LoginPage() {
 
     {error && <p className={styles.error}>{error}</p>}
 
-    <button type="submit" className={styles.primaryBtn} disabled={loading}>
-        {loading ? 'Authenticating…' : 'Authenticate'}
-    </button>
+   <button type="submit" className={styles.primaryBtn} disabled={loading}>
+  {loading ? 'Authenticating…' : 'Authenticate'}
+</button>
 
-    <p className={styles.hint}>
-        Authentication handled by Grid-X backend
-    </p>
+<p className={styles.hint}>
+  Authentication handled by Grid-X backend
+</p>
+
+<p className={styles.register}>
+  New to Grid-X ? {' '}
+  <span onClick={() => router.push('/registration')}>
+       Create an account
+  </span>
+</p>
+
 </form>
 
         </div>

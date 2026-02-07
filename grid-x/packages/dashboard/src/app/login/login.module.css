@@ -76,7 +76,7 @@
   border-radius: 14px;
   padding: 2.8rem 2.5rem;         /* KEY: more internal space */
   width: 340px;                   /* wider = calmer */
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition: transform 0.25s ease, border-color 0.25s ease;
 }
@@ -102,6 +102,53 @@
 }
 
 /* --- Button --- */
+.register {
+  margin-top: 0.5rem;
+  font-size: 0.5rem;
+  color: #888;
+  text-align: right;
+}
+
+.register span {
+  color: #60a5fa;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.register span:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Role Select ---------- */
+
+.field select {
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.95rem;
+
+  appearance: none;            /* remove default arrow */
+  background-image: 
+    linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 55%,
+    calc(100% - 15px) 55%;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+}
+
+.field select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+
 
 .card button {
   background: #0070f3;
@@ -116,5 +163,5 @@
 }
 
 .card button:hover {
-  background: #0059c1;
+  background: #1771c0;
 }
