@@ -1,0 +1,22 @@
+FRONTEND to BACKEND:
+buyer:
+register- name,userid,cpu requirements,password
+upload- dataset,code,requirements (for now we only use python) 
+seller:
+register - name,userid,cpu specs,password
+(some information to connect the agent running in the sellers pc to the backend)?
+
+BACKEND to FRONTEND:
+register- all possible cases, successful and unsucessfull
+output - the trained model from the sellers aggregated and downloadable for the buyer..?
+*and all the queries for data like status, time ran ect.... we need to add this..?
+
+
+DATABASE:
+buyer: b_userid, name, cpu req, pass
+seller: name, s_userid, specs, pass
+job: req, data.csv, code, userid, 
+
+supabase grid-x password: p_rmrP+-u-7MFk*
+
+
