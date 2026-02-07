@@ -56,3 +56,15 @@ def login_user(user_credentials: schemas.UserLogin, db: Session = Depends(databa
 
     # 4. Success! Return the user data
     return user
+
+@router.get("/wallet/{user_id}")
+def get_wallet_balance(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return {
+        "user_id": user.id,
+        "credits": user.credits,
+        "role": user.role
+    }

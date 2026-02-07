@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 
 class UserCreate(BaseModel):
@@ -83,3 +83,39 @@ class JobResultResponse(BaseModel):
     title: str
     status: str
     final_result_url: Optional[str] = None # Will be null if job isn't finished
+
+class SellerTaskInfo(BaseModel):
+    id: int
+    job_id: int
+    assigned_to: str # This is the Agent ID
+    status: str
+    result_file_url: Optional[str]
+    completed_at: Optional[datetime]
+
+class SellerTaskResponse(BaseModel):
+    user_id: int
+    total_completed: int
+    tasks: List[SellerTaskInfo]
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    role: str
+    credits: float # Include this so the frontend can display the balance
+
+    class Config:
+        from_attributes = True
+
+class AgentInfo(BaseModel):
+    id: str
+    status: str
+    gpu_model: Optional[str]
+    ram_total: Optional[str]
+    last_heartbeat: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+class AgentListResponse(BaseModel):
+    user_id: int
+    agents: List[AgentInfo]

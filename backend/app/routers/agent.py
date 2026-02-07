@@ -193,12 +193,18 @@ def complete_task(data: schemas.TaskComplete, db: Session = Depends(database.get
         agent.status = "IDLE"
         agent.last_heartbeat = datetime.now(timezone.utc)
 
+    # CRITICAL: Commit the status update BEFORE checking if all tasks are done
+    # Otherwise the query won't see this task as COMPLETED yet!
+    db.commit()
+
     # 4. CHECK IF PARENT JOB IS DONE
     # We count how many subtasks are NOT completed yet for this job
     remaining_tasks = db.query(models.Subtask).filter(
         models.Subtask.job_id == subtask.job_id,
         models.Subtask.status != "COMPLETED"
     ).count()
+    
+    print(f"🔍 Job {subtask.job_id}: {remaining_tasks} tasks remaining")
     
     if remaining_tasks == 0:
         # All tasks are done! Mark the Job as COMPLETED.
@@ -209,11 +215,16 @@ def complete_task(data: schemas.TaskComplete, db: Session = Depends(database.get
             
             # TRIGGER AGGREGATION
             try:
+                print(f"🔄 Starting aggregation for job {parent_job.id}...")
                 final_url = aggregate_pytorch_weights(parent_job.id, db)
                 parent_job.final_result_url = final_url
+                db.commit()  # Commit the job status and final URL
+                print(f"✅ Aggregation complete! Final model: {final_url}")
             except Exception as e:
                 print(f"❌ Aggregation Failed: {e}")
-
-    db.commit()
+                import traceback
+                traceback.print_exc()
+        else:
+            print(f"⚠️  Parent job {subtask.job_id} not found!")
     
     return {"message": "Task marked as completed. Good job!"}
