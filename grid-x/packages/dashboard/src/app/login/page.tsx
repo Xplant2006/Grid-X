@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
 import { API_BASE } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
+
 
 export default function LoginPage() {
     const router = useRouter();
-
+     const { setUser } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -35,6 +37,7 @@ export default function LoginPage() {
 
             // Save user for later use (jobs, dashboards)
             localStorage.setItem('user', JSON.stringify(user));
+            setUser(user);
 
             // Redirect based on backend role
             if (user.role === 'buyer') {

@@ -1,0 +1,57 @@
+/* Sidebar container */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background-color: #0b0b0b;
+  border-right: 1px solid #1f1f1f;
+
+  padding: 1.8rem 1.4rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* User info block */
+.userBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  padding: 1.2rem;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.01)
+  );
+
+  border: 1px solid #222;
+}
+
+/* Email */
+.email {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e6edf3;
+
+  word-break: break-all;
+}
+
+/* User ID */
+.userId {
+  font-size: 0.8rem;
+  color: #9da7b3;
+}
+
+/* Role badge */
+.role {
+  margin-top: 0.3rem;
+
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  color: #7dd3fc;
+}

@@ -1,149 +1,218 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './buyer.module.css';
+import { API_BASE } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
-interface Node {
-    id: string;
-    name: string;
-    specs: { cpu: string; ram: string };
-    status: string;
+interface Job {
+  id: number;
+  title: string;
+  status: string;
+  created_at: string;
+  original_code_url?: string;
+  original_data_url?: string;
+}
+
+interface Agent {
+  id: string;
+  status: string;
+  gpu_model: string;
+  ram_total: string;
+  last_heartbeat: string;
 }
 
 export default function BuyerDashboard() {
-    const [code, setCode] = useState('import time\nprint("Hello Grid-X")\ntime.sleep(2)\nprint("Done")');
-    const [logs, setLogs] = useState<string[]>([]);
-    const [status, setStatus] = useState('Ready to Deploy');
-    const [nodes, setNodes] = useState<Node[]>([]);
-    const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const { user } = useAuth();
 
-    // Poll for Active Nodes
-    useEffect(() => {
-        const fetchNodes = async () => {
-            try {
-                const res = await fetch('/api/nodes');
-                const data = await res.json();
-                setNodes(data.nodes || []);
-            } catch (err) { console.error('Failed to fetch nodes', err); }
-        };
-        fetchNodes();
-        const interval = setInterval(fetchNodes, 5000);
-        return () => clearInterval(interval);
-    }, []);
+  // ─── Upload State ──────────────────────────────────────────────
+  const [title, setTitle] = useState('');
+  const [codeFile, setCodeFile] = useState<File | null>(null);
+  const [reqFile, setReqFile] = useState<File | null>(null);
+  const [dataFile, setDataFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState('');
 
-    // Poll for Job Logs if a job is running
-    useEffect(() => {
-        if (!activeJobId) return;
+  // ─── Jobs & Agents ─────────────────────────────────────────────
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
 
-        const pollJob = async () => {
-            try {
-                const res = await fetch(`/api/jobs?id=${activeJobId}`);
-                const data = await res.json();
-                if (data.job) {
-                    setLogs(data.job.logs || []);
-                    if (data.job.status === 'completed' || data.job.status === 'failed') {
-                        setStatus('Job ' + data.job.status);
-                        setActiveJobId(null); // Stop polling
-                    }
-                }
-            } catch (err) { console.error(err); }
-        };
+  /* ===================== Upload Job ===================== */
+  const handleUpload = async () => {
+    if (!user || !codeFile || !reqFile || !dataFile || !title) {
+      alert('All fields are required');
+      return;
+    }
 
-        const interval = setInterval(pollJob, 1000);
-        return () => clearInterval(interval);
-    }, [activeJobId]);
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('user_id', String(user.id));
+    formData.append('file_code', codeFile);
+    formData.append('file_req', reqFile);
+    formData.append('file_data', dataFile);
 
-    const handleDeploy = async () => {
-        setStatus('Deploying...');
-        setLogs(['> Submitting to Hub...']);
+    try {
+      setUploadStatus('Uploading...');
+      const res = await fetch(`${API_BASE}/jobs/upload`, {
+        method: 'POST',
+        body: formData,
+      });
 
-        try {
-            const res = await fetch('/api/jobs', {
-                method: 'POST',
-                body: JSON.stringify({ script: code })
-            });
-            const data = await res.json();
-            if (data.success) {
-                setActiveJobId(data.jobId);
-                setLogs(prev => [...prev, `> Job ID: ${data.jobId}`, '> Waiting for Node assignment...']);
-            }
-        } catch (err) {
-            setStatus('Error');
-            setLogs(prev => [...prev, '> Failed to submit job.']);
-        }
-    };
+      const data = await res.json();
+      setUploadStatus(data.message || 'Submitted');
+      fetchJobs(); // refresh job list
+    } catch {
+      setUploadStatus('Upload failed');
+    }
+  };
 
-    const activeNodeCount = nodes.filter(n => n.status !== 'offline').length;
+  /* ===================== Fetch Jobs ===================== */
+const fetchJobs = async () => {
+  if (!user) return;
 
-    return (
-        <div className={styles.dashboard}>
-            <header className={styles.header}>
-                <h1>Scientist Workstation</h1>
-                <div className={styles.stats}>
-                    <span>Active Nodes: {activeNodeCount}</span>
-                    <span>Targeting: Standard Grid</span>
-                </div>
-            </header>
+  const res = await fetch(`${API_BASE}/jobs/list/${user.id}`);
 
-            <main className={styles.main}>
-                {/* Left: Code Editor */}
-                <section className={styles.panel}>
-                    <h2>Script.py</h2>
-                    <textarea
-                        className={styles.editor}
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                    />
-                </section>
+  if (!res.ok) {
+    console.error(await res.text());
+    return;
+  }
 
-                {/* Center: Configuration & Uploads */}
-                <section className={styles.panel}>
-                    <h2>Configuration</h2>
-                    <div className={styles.uploadBox}>
-                        <label>requirements.txt</label>
-                        <input type="file" />
-                    </div>
-                    <div className={styles.uploadBox}>
-                        <label>dataset.csv</label>
-                        <input type="file" />
-                    </div>
+  const data = await res.json();
+  setJobs(data);
+};
 
-                    <div className={styles.activeNodesList}>
-                        <h3>Available Resources</h3>
-                        <ul>
-                            {nodes.map(n => (
-                                <li key={n.id} style={{ color: n.status === 'offline' ? '#555' : '#888' }}>
-                                    {n.name} ({n.specs.cpu}) - {n.status}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
 
-                    <div className={styles.actions}>
-                        <button
-                            className={styles.deployBtn}
-                            onClick={handleDeploy}
-                            disabled={status === 'Deploying...'}
-                        >
-                            {status === 'Deploying...' ? 'Running...' : 'Deploy to Grid'}
-                        </button>
-                    </div>
-                </section>
+  /* ===================== Fetch Agents ===================== */
+const fetchAgents = async () => {
+  const res = await fetch(`${API_BASE}/stats/agents/online`);
+  if (!res.ok) {
+    console.error(await res.text());
+    return;
+  }
 
-                {/* Right: Live Terminal */}
-                <section className={`${styles.panel} ${styles.terminalPanel}`}>
-                    <div className={styles.terminalHeader}>
-                        <span className={styles.statusDot} data-status={activeJobId ? 'active' : 'idle'}></span>
-                        Live Terminal
-                    </div>
-                    <div className={styles.terminal}>
-                        {logs.map((log, i) => (
-                            <div key={i} className={styles.logLine}>{log}</div>
-                        ))}
-                        <div className={styles.cursor}>_</div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    );
+  const data = await res.json();
+  setAgents(data);
+};
+
+  /* ===================== Polling ===================== */
+ useEffect(() => {
+  if (!user) return;
+
+  fetchJobs();
+  fetchAgents();
+
+  const interval = setInterval(() => {
+    fetchJobs();
+    fetchAgents();
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [user]);
+
+
+  /* ===================== Download Result ===================== */
+  const downloadResult = async (jobId: number) => {
+    try {
+      const res = await fetch(
+        `${API_BASE}/jobs/download?user_id=${user?.id}&job_id=${jobId}`
+      );
+
+      if (!res.ok) {
+        alert('Result not available yet');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `job_${jobId}_result.zip`;
+      a.click();
+    } catch {
+      alert('Download failed');
+    }
+  };
+
+  /* ===================== UI ===================== */
+  return (
+    <div className={styles.dashboard}>
+  <header className={styles.header}>
+    <h1>Scientist Workstation</h1>
+    <p>Submit jobs, monitor progress, and explore available compute.</p>
+  </header>
+
+  <div className={styles.grid}>
+    {/* Upload */}
+    <section className={styles.card}>
+      <h2>Upload New Job</h2>
+
+      <input
+        className={styles.input}
+        placeholder="Job Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
+      <label className={styles.file}>
+        Code file (.py/.ipynb)        <input type="file" onChange={(e) => setCodeFile(e.target.files?.[0] || null)} />
+      </label>
+
+      <label className={styles.file}>
+        Requirements        <input type="file" onChange={(e) => setReqFile(e.target.files?.[0] || null)} />
+      </label>
+
+      <label className={styles.file}>
+        Dataset (.csv)
+        <input type="file" onChange={(e) => setDataFile(e.target.files?.[0] || null)} />
+      </label>
+
+      <button className={styles.primaryBtn} onClick={handleUpload}>
+        Submit Job
+      </button>
+
+      <span className={styles.status}>{uploadStatus}</span>
+    </section>
+
+    {/* Jobs */}
+    <section className={styles.card}>
+      <h2>My Jobs</h2>
+
+      {jobs.length === 0 && <p className={styles.muted}>No jobs submitted yet.</p>}
+
+      <ul className={styles.list}>
+        {jobs.map(job => (
+          <li key={job.id} className={styles.jobItem}>
+            <div>
+              <strong>{job.title}</strong>
+              <span className={styles.badge}>{job.status}</span>
+            </div>
+
+            {job.status.toUpperCase() === 'COMPLETED' && (
+              <button onClick={() => downloadResult(job.id)}>⬇ Download</button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    {/* Agents */}
+    <section className={styles.card}>
+      <h2>Available Sellers</h2>
+
+      {agents.length === 0 && <p className={styles.muted}>No agents online.</p>}
+
+      <ul className={styles.list}>
+        {agents.map(agent => (
+          <li key={agent.id} className={styles.agentItem}>
+            <strong>{agent.gpu_model}</strong>
+            <span>{agent.ram_total}</span>
+            <span className={styles.badge}>{agent.status}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</div>
+
+  );
 }

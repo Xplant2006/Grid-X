@@ -1,0 +1,11 @@
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #0a0a0a;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
