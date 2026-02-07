@@ -45,40 +45,54 @@ def run_in_sandbox(
     # Ensure absolute path
     source_dir = os.path.abspath(source_dir)
     
-    # Resource constraints
-    # nano_cpus = int(cpu_limit * 1e9)
+def run_in_sandbox(code: str, requirements: str, data_url: str) -> str:
+    """
+    Runs user code in a sandboxed Docker container with configurable resource limits.
     
-    # Security:
-    # 1. Network disabled (network_mode="none")
-    # 2. Read-only root (read_only=True) - BUT we need to write pyc or pip install? 
-    #    Better: Mount /tmp as tmpfs. 
-    #    For requirements, if we want to support them, we need a pre-step.
-    #    For this MVP, we assume dependencies are either standard or user bundles them (or we skip pip install for pure isolation).
-    #    Let's try to support pip install by doing it with network enabled first? 
-    #    Actually, keeping it simple and SECURE as requested: NO NETWORK. 
-    #    If they need libs, they should bundle 'em or we rely on pre-installed in base image.
+    Resource limits can be configured via environment variables:
+    - WORKER_CPU_LIMIT: CPU cores (default: 1.0)
+    - WORKER_MEMORY_LIMIT: Memory in MB (default: 2048)
+    - WORKER_DISK_LIMIT: Disk space in MB (default: 1024)
+    """
+    # Get configurable resource limits from environment
+    cpu_limit = float(os.getenv("WORKER_CPU_LIMIT", "1.0"))
+    memory_limit = int(os.getenv("WORKER_MEMORY_LIMIT", "2048"))  # MB
+    disk_limit = int(os.getenv("WORKER_DISK_LIMIT", "1024"))  # MB
     
+    print(f"🔒 Running in sandbox with limits:")
+    print(f"   CPU: {cpu_limit} cores")
+    print(f"   Memory: {memory_limit}MB")
+    print(f"   Disk: {disk_limit}MB")
+    
+    # Create a temporary directory for this run
+    temp_dir = tempfile.mkdtemp()
     try:
+        # Write code and requirements
+        code_path = os.path.join(temp_dir, "train.py")
+        req_path = os.path.join(temp_dir, "requirements.txt")
+        with open(code_path, "w") as f:
+            f.write(code)
+        with open(req_path, "w") as f:
+            f.write(requirements)
+
+        # Download data
+        data_path = os.path.join(temp_dir, "data.csv")
+        resp = requests.get(data_url)
+        with open(data_path, "wb") as f:
+            f.write(resp.content)
+
+        # Run container with configurable limits
         container = client.containers.run(
             image="secure-executor-base:latest",
-            command=f"python3 {entry_point}",
-            volumes={
-                source_dir: {'bind': '/app', 'mode': 'rw'} # rw needed if they write output? Let's say rw for /app, but risky implementation. 
-            },
+            command=["bash", "-c", "pip install -q -r requirements.txt && python train.py"],
+            volumes={temp_dir: {"bind": "/app", "mode": "rw"}},
             working_dir="/app",
-            mem_limit=mem_limit,
-            nano_cpus=int(cpu_limit * 1_000_000_000),
-            network_mode="none", # Strict isolation
             detach=True,
-            user="sandbox", # Run as non-root
-            read_only=False, # Set to true for harder hardening, but might break some python caching
-            # cap_drop=["ALL"], # Drop all capabilities
-            security_opt=["no-new-privileges"]
+            network_mode="none",  # No internet
+            mem_limit=f"{memory_limit}m",  # Configurable memory limit
+            nano_cpus=int(cpu_limit * 1e9),  # Configurable CPU limit (convert to nanocpus)
+            storage_opt={"size": f"{disk_limit}m"}  # Configurable disk limit
         )
-        
-        container.wait(timeout=30) # 30s timeout execution
-        
-        logs = container.logs(stdout=True, stderr=True)
         # Separate stdout/stderr if possible, but docker api returns bytes.
         # We can also inspect the container for exit code
         container.reload()
