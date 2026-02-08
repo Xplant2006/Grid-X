@@ -1,38 +1,104 @@
-# Grid-X Worker Setup Guide
+Worker Quick Start Guide
+For Workers: How to Rent Out Your CPU
+TL;DR - 3 Simple Steps
+bash
+# 1. Clone and setup
+git clone https://github.com/YOUR_USERNAME/Grid-X.git
+cd Grid-X
+# 2. Start setup (Follow interactive prompts!)
+./setup_worker.sh
+# 3. Start earning!
+./start_worker.sh
+What the Setup Does
+setup_worker.sh
+ automatically:
+✅ Checks Python & Docker are installed
+✅ Creates Python virtual environment
+✅ Installs worker dependencies
+✅ Builds Docker sandbox image (~2GB, takes 2-3 min)
+✅ Prompts you for Backend URL & Email (NEW!)
+✅ Creates configuration file
+✅ Creates start script
+What You Need:
+Docker (for running tasks securely)
+Python 3.11+
+5GB free disk space (for Docker image)
+Stable internet
+Configuration
+The setup script now asks for this automatically!
 
-Welcome to the Grid-X Compute Network!
-This package contains everything you need to run a Grid-X worker node on Linux/macOS.
+If you need to change it later, edit worker_config.env:
 
-## Prerequisites
-1. **Python 3.10+** (Check with `python3 --version`)
-2. **Docker** (Check with `docker --version`)
-   - Ensure Docker is running! (`docker info`)
+bash
+# Change this to the actual Grid-X backend URL
+BACKEND_URL=https://gridx-backend.example.com
+# Your unique worker ID (auto-generated, can customize)
+AGENT_ID=worker_mycomputer_12345
+# Your email for registration
+WORKER_EMAIL=myemail@example.com
+Running the Worker
+bash
+./start_worker.sh
+What happens:
 
-## Quick Start
-1. **Run the Setup Script**:
-   This prepares the environment, builds the Docker image, and configures your worker.
-   ```bash
-   chmod +x setup_worker.sh
-   ./setup_worker.sh
-   ```
+Worker registers with backend
+Polls for tasks every 10 seconds
+Downloads task code & data chunk
+Runs training in isolated Docker container
+Uploads trained model weights
+Repeats!
+Logs saved to: worker.log
 
-2. **Configuration Prompts**:
-   - **Backend URL**: Enter existing backend URL (e.g., `http://YOUR_SERVER_IP:8000`) or default `http://localhost:8000`.
-   - **Worker Email**: CRITICAL! Enter the email address you used to register on the Grid-X platform (e.g., `hadhi@ek.com`). If not registered, register first!
+Resource Usage
+Each task uses:
 
-3. **Start the Worker**:
-   ```bash
-   ./start_worker.sh
-   ```
-   You should see: "🚀 Grid-X Worker Starting..." and successful registration logs.
+CPU: 1 core
+RAM: 2GB max
+Disk: 1GB temporary
+Network: Only for downloading/uploading (no internet during execution)
+Security
+What Workers Run:
+User-submitted Python training code
+Runs in isolated Docker container
+No internet access during execution
+No access to your files
+Runs as non-root user
+What Workers See:
+Small chunk of CSV data (not full dataset)
+Training code
+Never see other workers' data
+What Workers Upload:
+Model weights only (not raw data)
+Stopping the Worker
+bash
+# Press Ctrl+C in the terminal
+# Or:
+pkill -f "python worker/main.py"
+Troubleshooting
+"Docker permission denied"
+bash
+sudo usermod -aG docker $USER
+newgrp docker
+"No tasks available"
+This is normal! Means:
 
-## Troubleshooting
-- **Permission Denied**: Run `chmod +x *.sh`.
-- **Docker Permission Denied**: Run `sudo usermod -aG docker $USER` and log out/in.
-- **Worker Registration Failed (404)**: Ensure your `WORKER_EMAIL` in `worker_config.env` matches a registered user on the backend.
-
-## Checking Logs
-Logs are saved to `worker.log`. View them live:
-```bash
+No jobs currently submitted
+Other workers claimed tasks first
+Worker keeps polling automatically
+"Can't connect to backend"
+Check BACKEND_URL in worker_config.env
+Verify: curl $BACKEND_URL
+Monitoring
+bash
+# View live logs
 tail -f worker.log
-```
+# Count completed tasks
+grep "Task completed" worker.log | wc -l
+Full Documentation
+See 
+WORKER_SETUP.md
+ for detailed setup instructions and troubleshooting.
+
+
+Comment
+Ctrl+Alt+M
