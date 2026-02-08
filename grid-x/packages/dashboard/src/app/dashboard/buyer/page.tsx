@@ -135,28 +135,32 @@ useEffect(() => {
 
 
   /* ===================== Download Result ===================== */
-  const downloadResult = async (jobId: number) => {
-    try {
-      const res = await fetch(
-        `${API_BASE}/jobs/download/${jobId}`
-      );
+const downloadResult = async (jobId: number) => {
+  try {
+    const res = await fetch(`${API_BASE}/jobs/${jobId}`, {
+      headers: {
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
 
-      if (!res.ok) {
-        alert('Result not available yet');
-        return;
-      }
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `job_${jobId}_result.zip`;
-      a.click();
-    } catch {
-      alert('Download failed');
+    if (!res.ok) {
+      alert('Result not available yet');
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    if (!data.final_result_url) {
+      alert('Result file not ready');
+      return;
+    }
+
+    // Open result directly
+    window.open(data.final_result_url, '_blank');
+  } catch {
+    alert('Download failed');
+  }
+};
 
   /* ===================== UI ===================== */
   return (

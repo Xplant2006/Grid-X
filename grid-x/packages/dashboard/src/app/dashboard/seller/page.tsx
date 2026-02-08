@@ -154,7 +154,7 @@ export default function SellerDashboard() {
         <ul className={styles.list}>
           {tasks.map(task => (
             <li key={task.id} className={styles.taskRow}>
-              <span>Job #{task.job_id}</span>
+              <span>Job #{task.id}</span>
               <span className={styles.done}>COMPLETED</span>
             </li>
           ))}
