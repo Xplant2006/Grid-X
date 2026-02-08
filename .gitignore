@@ -1,0 +1,166 @@
+# ==========================================
+# Grid-X .gitignore
+# ==========================================
+
+# ==========================================
+# CRITICAL: Secrets and Credentials
+# ==========================================
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+!worker_config.env.example
+
+# Supabase keys (if accidentally hardcoded)
+*supabase_key*
+*service_role*
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.manifest
+*.spec
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+
+# ==========================================
+# Database Files
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+sql_app.db
+backend/sql_app.db
+backend/app/sql_app.db
+
+# ==========================================
+# Logs and Output Files
+# ==========================================
+*.log
+backend.log
+test_output.log
+worker.log
+uvicorn.log
+*.out
+
+# Test outputs
+test_results/
+coverage/
+
+# ==========================================
+# Docker
+# ==========================================
+*.tar
+*.gz
+docker-compose.override.yml
+
+# ==========================================
+# IDE and Editors
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# OS Files
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Test Artifacts
+# ==========================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ==========================================
+# Temporary Files
+# ==========================================
+*.tmp
+*.bak
+*.swp
+tmp/
+temp/
+*.cache
+
+# ==========================================
+# Node/Frontend (if applicable)
+# ==========================================
+node_modules/
+.next/
+out/
+build/
+.nuxt/
+dist/
+
+# ==========================================
+# Uploaded Files and User Data
+# ==========================================
+uploads/
+user_data/
+jobs/*/
+results/
+
+# ==========================================
+# Development and Testing Scripts
+# ==========================================
+# Keep test scripts but exclude their outputs
+scratch.py
+debug.py
+test_local.py
+
+# ==========================================
+# Production Deployment
+# ==========================================
+.railway/
+.vercel/
+.netlify/
+
+# ==========================================
+# Backup Files
+# ==========================================
+*.backup
+*.old
+backup/
+
+# Personal debugging scripts (not needed in repo)
+check_db.py
+quick_test.py
+test_supabase.py

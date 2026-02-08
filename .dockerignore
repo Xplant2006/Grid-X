@@ -1,0 +1,39 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Database
+*.db
+sql_app.db
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+
+# Node modules (if any frontend)
+node_modules/
+grid-x/node_modules/
+
+# Other large folders
+backend/
+worker/
+grid-x/
+LICENSE
+README.md
