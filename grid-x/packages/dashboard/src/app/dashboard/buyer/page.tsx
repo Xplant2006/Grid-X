@@ -144,29 +144,32 @@ setTimeout(() => {
 
 
 
-  /* ===================== Download Result ===================== */
-  const downloadResult = async (jobId: number) => {
-    try {
-      const res = await fetch(
-        `${API_BASE}/jobs/download/${jobId}`
-      );
+ /* ===================== Open Result ===================== */
+const downloadResult = async (jobId: number) => {
+  try {
+    const res = await fetch(`${API_BASE}/jobs/download/${jobId}`);
 
-      if (!res.ok) {
-        alert('Result not available yet');
-        return;
-      }
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `job_${jobId}_result.zip`;
-      a.click();
-    } catch {
-      alert('Download failed');
+    if (!res.ok) {
+      alert('Result not available yet');
+      return;
     }
-  };
+
+    // 1. Parse JSON metadata
+    const data = await res.json();
+
+    // 2. Open the actual result URL
+    if (data.final_result_url) {
+      window.open(data.final_result_url, '_blank');
+    } else {
+      alert('Result URL not found');
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert('Failed to open result');
+  }
+};
+
 
   /* ===================== UI ===================== */
   return (
