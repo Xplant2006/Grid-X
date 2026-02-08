@@ -1,165 +1,133 @@
-# Grid-X: Federated Learning Platform
+# Grid-X Project Documentation
 
-A distributed federated learning system that enables collaborative machine learning across multiple agents without sharing raw data.
+Grid-X is a decentralized compute network platform enabling distributed machine learning training across a network of worker nodes.
 
-## 🚀 Features
+---
 
-- **Federated Learning**: Train models across distributed workers using FedAvg
-- **Secure Execution**: Docker-based sandboxed code execution
-- **REST API**: FastAPI backend for job management
-- **Worker Agents**: Autonomous workers that poll for tasks and execute training
-- **Cloud Storage**: Supabase integration for file storage
-- **CSV Data Splitting**: Automatic data partitioning across workers
+## 🏗️ System Architecture
 
-## 📋 Prerequisites
+The system consists of three main components: **Backend**, **Worker**, and **Frontend**.
 
-- Python 3.11+
-- Docker (for worker sandboxing)
-- Supabase account (for file storage)
-
-## 🛠️ Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/Grid-X.git
-cd Grid-X
+```mermaid
+graph TD
+    User((User)) -->|Submits Job| Frontend
+    Frontend -->|API Request| Backend
+    Backend -->|Stores Metadata| DB[(SQLite Database)]
+    Backend -->|Uploads Files| Storage[Supabase Storage]
+    
+    subgraph Compute Network
+        Worker1[Worker Node 1]
+        Worker2[Worker Node 2]
+    end
+    
+    Worker1 -->|Polls for Task| Backend
+    Worker1 -->|Downloads Data| Storage
+    Worker1 -->|Uploads Result| Storage
+    
+    Backend -->|Aggregates Results| Storage
 ```
 
-### 2. Create Virtual Environment
+---
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
+## 1. Backend (The Core)
+The central nervous system of Grid-X. It handles authentication, job management, and orchestration.
 
-### 3. Install Dependencies
+*   **Language**: Python 3.10+
+*   **Framework**: FastAPI (High-performance Async Framework)
+*   **Database**: SQLite (`Grid-X.db`) via SQLAlchemy ORM
+*   **Storage**: Supabase (Object Storage for large files like datasets and models)
 
-```bash
-# Backend dependencies
-pip install -r backend/requirements.txt
+### Key Modules:
+*   `app/main.py`: Entry point, CORS config.
+*   `app/models.py`: Database schema (Users, Agents, Jobs, Subtasks).
+*   `app/routers/agent.py`: API for Workers (Heartbeat, Task Request, Result Upload).
+*   `app/routers/front_job.py`: API for Frontend (Job Submission, Status).
+*   `app/aggregation.py`: Federated Averaging logic (Pytorch-based).
 
-# Worker dependencies
-pip install -r worker/requirements.txt
-```
+### Networking Model:
+*   **REST API**: Exposes HTTP endpoints (`/agent/...`, `/jobs/...`).
+*   **Polling**: Does not push to workers; relies on workers polling for tasks.
+*   **Sync/Async**: Uses standard synchronous DB calls but runs on `uvicorn` (ASGI).
 
-### 4. Configure Environment Variables
+---
 
-```bash
-cp .env.example .env
-# Edit .env and add your Supabase credentials
-```
+## 2. Worker (The Compute Node)
+Isolates and executes code securely. Can run on any machine (Laptop, Server, Raspberry Pi).
 
-Required environment variables:
-- `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (NOT the anon key)
-- `SUPABASE_BUCKET_NAME`: Storage bucket name (default: `gridx-files`)
+*   **Language**: Python 3.11
+*   **Environment**: Docker (for sandboxing)
+*   **Dependencies**: `requests`, `docker`, `torch`
 
-### 5. Build Docker Image
+### How it Works:
+1.  **Registration**: On startup, registers with Backend via `POST /agent/register`.
+2.  **Heartbeat**: Sends `POST /agent/heartbeat` every 5 seconds to say "I'm alive".
+3.  **Polling**: Asks `POST /agent/request_task` every 10 seconds.
+4.  **Execution**:
+    *   Downloads Code (`train.py`) and Data (`data.csv`).
+    *   Builds/Runs a Docker Container (`secure-executor-base`).
+    *   Mounts a temporary volume.
+    *   Runs `python train.py` inside the container.
+5.  **Reporting**: Uploads `model.pth` and calls `POST /agent/complete_task`.
 
-```bash
-chmod +x build_docker.sh
-./build_docker.sh
-```
+### Networking:
+*   **Outbound Only**: Does not require open firewall ports. Connects OUT to Backend.
+*   **Configuration**: Controlled via `worker_config.env` (Backend URL, Email).
 
-## 🏃 Running the System
+---
 
-### Start the Backend
+## 3. Frontend (The Dashboard)
+User interface for submitting jobs and viewing progress.
 
+*   **Framework**: Next.js 16 (React Framework)
+*   **Language**: TypeScript / JavaScript
+*   **UI Library**: React 19
+*   **Location**: `grid-x/packages/dashboard` (Monorepo structure)
+
+---
+
+## 🔄 Data Flow Overview
+
+1.  **Job Submission**:
+    *   User uploads `train.py`, `requirements.txt`, `data.csv`.
+    *   Frontend sends to Backend.
+    *   Backend uploads files to Storage and creates `Job` record.
+
+2.  **Task Dispatch**:
+    *   Worker asks for work.
+    *   Backend checks DB for `PENDING` subtasks.
+    *   Backend assigns task to Worker.
+
+3.  **Execution & Result**:
+    *   Worker processes data.
+    *   Worker uploads `model.pth` to Storage.
+    *   Worker notifies Backend.
+
+4.  **Aggregation (FedAvg)**:
+    *   When all subtasks are complete, Backend triggers `aggregation.py`.
+    *   Backend downloads all `model.pth` files.
+    *   Backend averages weights (Federated Learning).
+    *   Backend saves `final_model.pth`.
+
+---
+
+## 🚀 Setup & Deployment
+
+### Backend
 ```bash
 cd backend
-uvicorn app.main:app --reload --port 8000
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`
-- API docs: `http://localhost:8000/docs`
+### Worker (Fresh Device)
+Refer to [`WORKER_SETUP.md`] for detailed instructions.
+1.  Move `gridx-worker.tar.gz` to device.
+2.  Extract and run `./setup_worker.sh`.
+3.  Run `./start_worker.sh`.
 
-### Start a Worker
-
+### Frontend
 ```bash
-export BACKEND_URL="http://localhost:8000"
-export AGENT_ID="worker_1"
-python worker/main.py
+cd grid-x/packages/dashboard
+npm install
+npm run dev
 ```
-
-## 🧪 Testing
-
-### Run Integration Tests
-
-```bash
-python tests/test_integration_simple.py
-```
-
-### Test Supabase Connection
-
-```bash
-python test_supabase.py
-```
-
-## 📁 Project Structure
-
-```
-Grid-X/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI application
-│   │   ├── models.py            # Database models
-│   │   ├── schemas.py           # Pydantic schemas
-│   │   ├── database.py          # Database configuration
-│   │   ├── aggregation.py       # FedAvg implementation
-│   │   └── routers/
-│   │       ├── front_auth.py    # Authentication endpoints
-│   │       ├── front_job.py     # Job management endpoints
-│   │       └── agent.py         # Worker agent endpoints
-│   └── requirements.txt
-├── worker/
-│   ├── main.py                  # Worker polling loop
-│   ├── executor.py              # Docker sandbox execution
-│   └── requirements.txt
-├── tests/
-│   └── test_integration_simple.py
-├── Dockerfile.base              # Base image for worker sandbox
-├── .dockerignore
-├── .gitignore
-├── .env.example                 # Environment variable template
-└── README.md
-```
-
-## 🔐 Security Notes
-
-- **Never commit `.env`** - It contains sensitive credentials
-- Use **service_role key** for backend operations (bypasses RLS)
-- Use **anon key** for frontend/client operations
-- Docker containers run as non-root user for security
-
-## 📊 How It Works
-
-1. **User submits job**: Upload training code, requirements, and CSV data
-2. **Backend splits data**: CSV is split into 5 chunks, uploaded to Supabase
-3. **Workers poll for tasks**: Idle workers request tasks from backend
-4. **Sandboxed execution**: Code runs in isolated Docker containers
-5. **Result upload**: Workers upload trained model weights
-6. **Aggregation**: Backend performs FedAvg when all subtasks complete
-7. **Final model**: Aggregated model is available for download
-
-## 🐛 Troubleshooting
-
-### Docker Permission Errors
-```bash
-sudo usermod -aG docker $USER
-# Then log out and back in
-```
-
-### Supabase Upload Fails
-- Check you're using the **service_role key**, not anon key
-- Verify bucket exists and is public
-- Check RLS policies allow uploads
-
-### No Tasks Available
-- Check backend logs for CSV splitting errors
-- Verify Supabase credentials are correct
-- Ensure database tables were created
-
-## 📝 License
-
-MIT License
