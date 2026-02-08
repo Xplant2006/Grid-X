@@ -17,7 +17,12 @@ def register_agent(data: schemas.AgentRegister, db: Session = Depends(database.g
     
     # 1. FIND THE HUMAN OWNER
     # We use the email provided by the script to find the User ID
-    owner = db.query(models.User).filter(models.User.email == data.email).first()
+    raw_email = data.email
+    clean_email = raw_email.strip().strip('"').strip("'").lower()
+    print(f"DEBUG: Registering agent with email: '{clean_email}' (Original: '{raw_email}')")
+    
+    owner = db.query(models.User).filter(models.User.email == clean_email).first()
+    print(f"DEBUG: Owner found: {owner}")
     
     if not owner:
         # If the email doesn't exist, the agent can't register

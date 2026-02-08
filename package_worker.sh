@@ -23,8 +23,13 @@ echo "📄 Copying files..."
 cp -r worker $TEMP_DIR/
 cp Dockerfile.base $TEMP_DIR/
 cp setup_worker.sh $TEMP_DIR/
-cp worker_config.env.example $TEMP_DIR/worker_config.env
-cp WORKER_SETUP.md $TEMP_DIR/README.md
+if [ -f "WORKER_SETUP.md" ]; then
+    cp WORKER_SETUP.md $TEMP_DIR/README.md
+else
+    echo "⚠️ WORKER_SETUP.md not found, creating dummy README"
+    echo "# Grid-X Worker" > $TEMP_DIR/README.md
+fi
+cp -n worker_config.env $TEMP_DIR/worker_config.env.default 2>/dev/null || true # Optional default config
 
 # Build archive
 echo "🗜️ Creating archive..."

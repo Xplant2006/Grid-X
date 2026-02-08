@@ -25,9 +25,12 @@ def register_agent():
     try:
         # For Hackathon, we hardcode an email that exists in the DB.
         # In production, this would be a config.
+        email = os.getenv("WORKER_EMAIL", "agent@gridx.com")
+        print(f"DEBUG: Using email for registration: {email}") # Keep one clean print
+        
         payload = {
             "id": AGENT_ID,
-            "email": "agent@gridx.com", # Needs to match a user in DB
+            "email": email,
             "gpu_model": GPU_MODEL,
             "ram_total": RAM_TOTAL
         }

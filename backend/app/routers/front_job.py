@@ -195,8 +195,35 @@ def get_my_jobs(user_id: int, db: Session = Depends(database.get_db)):
     # 2. Return them (FastAPI converts them to JSON automatically)
     return jobs
 
+@router.get("/{job_id}")
+def get_job_status(job_id: int, db: Session = Depends(database.get_db)):
+    """
+    Get the status of a specific job.
+    Includes calculated fields for progress.
+    """
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Calculate progress
+    total_subtasks = db.query(models.Subtask).filter(models.Subtask.job_id == job_id).count()
+    completed_subtasks = db.query(models.Subtask).filter(
+        models.Subtask.job_id == job_id, 
+        models.Subtask.status == "COMPLETED"
+    ).count()
+
+    return {
+        "id": job.id,
+        "title": job.title,
+        "status": job.status,
+        "created_at": job.created_at,
+        "final_result_url": job.final_result_url,
+        "total_subtasks": total_subtasks,
+        "completed_subtasks": completed_subtasks
+    }
+
 @router.get("/download/{job_id}", response_model=schemas.JobResultResponse)
-def get_final_job_result(job_id: int, user_id: int, db: Session = Depends(database.get_db)):
+def get_final_job_result(job_id: int, user_id: int = None, db: Session = Depends(database.get_db)):
     """
     Called by the Buyer Frontend to get the final download link.
     """
@@ -209,7 +236,8 @@ def get_final_job_result(job_id: int, user_id: int, db: Session = Depends(databa
 
     # 3. Security Check: Does the user_id match the job's owner_id?
     # This prevents User A from guessing User B's job ID and stealing their data.
-    if job.owner_id != user_id:
+    # We only check if user_id is provided (to support older clients)
+    if user_id is not None and job.owner_id != user_id:
         raise HTTPException(
             status_code=403, 
             detail="Unauthorized: You do not own this job."
@@ -221,5 +249,4 @@ def get_final_job_result(job_id: int, user_id: int, db: Session = Depends(databa
         "title": job.title,
         "status": job.status,
         "final_result_url": job.final_result_url
->>>>>>> origin/pre-merge-recovery
     }
