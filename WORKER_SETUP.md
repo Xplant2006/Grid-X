@@ -1,104 +1,99 @@
-Worker Quick Start Guide
-For Workers: How to Rent Out Your CPU
-TL;DR - 3 Simple Steps
-bash
-# 1. Clone and setup
-git clone https://github.com/YOUR_USERNAME/Grid-X.git
-cd Grid-X
-# 2. Start setup (Follow interactive prompts!)
+# 🚀 Grid-X Worker Setup Guide
+
+> **Monetize your idle compute power with Grid-X.**  
+> This package contains everything you need to run a Grid-X worker node on Linux or macOS.
+
+---
+
+## � How This Package Was Created
+
+This package (`gridx-worker.tar.gz`) was generated using the **Grid-X Package Manager**.
+
+### If you are on the Source Machine (Developer):
+To create a new distribution package for fresh devices:
+
+1.  Navigate to the project root.
+2.  Run the packager script:
+    ```bash
+    ./package_worker.sh
+    ```
+3.  This creates `gridx-worker.tar.gz` containing:
+    - Worker code (`worker/`)
+    - Setup Wizard (`setup_worker.sh`)
+    - Docker config (`Dockerfile.base`)
+    - This Guide (`WORKER_SETUP.md` -> `README.md`)
+
+---
+
+## �📋 Prerequisites (Target Machine)
+
+Before you start on the fresh device, ensure you have:
+- **Python 3.10+** (verify with `python3 --version`)
+- **Docker** running (verify with `docker info`)
+- **Stable Internet Connection**
+
+---
+
+## ⚡ Quick Start (Target Machine)
+
+### 1. Extract the Package
+Copy `gridx-worker.tar.gz` to your fresh machine and run:
+
+```bash
+# Create directory and extract
+mkdir gridx-worker
+tar -xzf gridx-worker.tar.gz -C gridx-worker
+cd gridx-worker
+```
+
+### 2. Run the Setup Wizard
+This script will prepare your environment, install dependencies, and build the secure sandbox.
+
+```bash
+chmod +x setup_worker.sh
 ./setup_worker.sh
-# 3. Start earning!
+```
+
+### 3. Configure Your Worker
+The wizard will prompt you for two things:
+
+*   **Backend URL**:
+    *   If testing locally: Press `Enter` to use default (`http://localhost:8000`)
+    *   If connecting to a server: Enter the IP (e.g., `http://192.168.1.50:8000`)
+
+*   **Worker Email** (CRITICAL):
+    *   Enter the email you used to register on the Grid-X platform (e.g., `hadhi@ek.com`).
+    *   *Note: If you haven't registered, please restart this step after registering.*
+
+### 4. Start Earning!
+Once setup is complete, launch the worker:
+
+```bash
 ./start_worker.sh
-What the Setup Does
-setup_worker.sh
- automatically:
-✅ Checks Python & Docker are installed
-✅ Creates Python virtual environment
-✅ Installs worker dependencies
-✅ Builds Docker sandbox image (~2GB, takes 2-3 min)
-✅ Prompts you for Backend URL & Email (NEW!)
-✅ Creates configuration file
-✅ Creates start script
-What You Need:
-Docker (for running tasks securely)
-Python 3.11+
-5GB free disk space (for Docker image)
-Stable internet
-Configuration
-The setup script now asks for this automatically!
+```
 
-If you need to change it later, edit worker_config.env:
+You should see:
+> `🚀 Grid-X Worker Starting...`  
+> `✅ Registered as worker_...`
 
-bash
-# Change this to the actual Grid-X backend URL
-BACKEND_URL=https://gridx-backend.example.com
-# Your unique worker ID (auto-generated, can customize)
-AGENT_ID=worker_mycomputer_12345
-# Your email for registration
-WORKER_EMAIL=myemail@example.com
-Running the Worker
-bash
-./start_worker.sh
-What happens:
+---
 
-Worker registers with backend
-Polls for tasks every 10 seconds
-Downloads task code & data chunk
-Runs training in isolated Docker container
-Uploads trained model weights
-Repeats!
-Logs saved to: worker.log
+## 🛠️ Troubleshooting
 
-Resource Usage
-Each task uses:
+| Issue | Solution |
+|-------|----------|
+| **Permission Denied** | Run `chmod +x *.sh` to make scripts executable. |
+| **Docker Permission Denied** | Run `sudo usermod -aG docker $USER`, then log out and back in. |
+| **Registration Failed (404)** | Your email is not found in the database. Check `worker_config.env` or register on the website. |
+| **Connection Refused** | Check if the Backend is running and if the URL in `worker_config.env` is correct. |
 
-CPU: 1 core
-RAM: 2GB max
-Disk: 1GB temporary
-Network: Only for downloading/uploading (no internet during execution)
-Security
-What Workers Run:
-User-submitted Python training code
-Runs in isolated Docker container
-No internet access during execution
-No access to your files
-Runs as non-root user
-What Workers See:
-Small chunk of CSV data (not full dataset)
-Training code
-Never see other workers' data
-What Workers Upload:
-Model weights only (not raw data)
-Stopping the Worker
-bash
-# Press Ctrl+C in the terminal
-# Or:
-pkill -f "python worker/main.py"
-Troubleshooting
-"Docker permission denied"
-bash
-sudo usermod -aG docker $USER
-newgrp docker
-"No tasks available"
-This is normal! Means:
+---
 
-No jobs currently submitted
-Other workers claimed tasks first
-Worker keeps polling automatically
-"Can't connect to backend"
-Check BACKEND_URL in worker_config.env
-Verify: curl $BACKEND_URL
-Monitoring
-bash
-# View live logs
+## 📊 Monitoring
+
+Logs are automatically saved to `worker.log`.  
+To view them in real-time:
+
+```bash
 tail -f worker.log
-# Count completed tasks
-grep "Task completed" worker.log | wc -l
-Full Documentation
-See 
-WORKER_SETUP.md
- for detailed setup instructions and troubleshooting.
-
-
-Comment
-Ctrl+Alt+M
+```
