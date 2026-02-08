@@ -54,7 +54,16 @@ export default function BuyerDashboard() {
     formData.append('file_data', dataFile);
 
     try {
-      setUploadStatus('Uploading...');
+      setUploadStatus('Submitting job to Grid-X...');
+
+setTimeout(() => {
+  setUploadStatus('Uploading files...');
+}, 600);
+
+setTimeout(() => {
+  setUploadStatus('Splitting dataset across workers...');
+}, 1500);
+
       const res = await fetch(`${API_BASE}/jobs/upload`, {
         method: 'POST',
         body: formData,
@@ -221,9 +230,18 @@ export default function BuyerDashboard() {
               <li key={job.id} className={styles.jobItem}>
                 <div>
                   <strong className={styles.flowText}>{job.title}</strong>
-                  <span className={`${styles.badge} ${styles.flowText}`}>
-                    {job.status}
-                  </span>
+                  <span
+  className={`${styles.badge} ${
+    job.status === 'PROCESSING'
+      ? styles.processing
+      : job.status === 'RUNNING'
+      ? styles.running
+      : styles.completed
+  }`}
+>
+  {job.status}
+</span>
+
                 </div>
 
                 {job.status.toUpperCase() === 'COMPLETED' && (
@@ -245,7 +263,18 @@ export default function BuyerDashboard() {
               <li key={agent.id} className={styles.agentItem}>
                 <strong className={styles.flowText}>{agent.gpu_model}</strong>
                 <span className={styles.flowText}>{agent.ram_total}</span>
-                <span className={`${styles.badge} ${styles.flowText}`}>{agent.status}</span>
+              <span
+  className={`${styles.badge} ${
+    agent.status === 'IDLE'
+      ? styles.idle
+      : agent.status === 'BUSY'
+      ? styles.running
+      : styles.offline
+  }`}
+>
+  {agent.status}
+</span>
+
               </li>
             ))}
           </ul>
