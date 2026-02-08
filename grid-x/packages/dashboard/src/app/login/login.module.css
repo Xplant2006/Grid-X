@@ -6,14 +6,20 @@
   min-height: 100vh;
   background-color: #0a0a0a;
   color: #fff;
-  font-family: var(--font-geist-sans);
-  padding: 2rem; /* prevents edge crowding */
+  font-family: var(--font-system-sans);
+  padding: 2rem;
+  /* prevents edge crowding */
+
+  /* Global Fly-in Animation */
+  opacity: 0;
+  animation: flyInLeft 0.8s ease-out forwards;
 }
 
 /* --- Headings --- */
 
 .title {
-  font-size: 3.2rem;              /* slightly bigger */
+  font-size: 3.2rem;
+  /* slightly bigger */
   font-weight: 700;
   margin-bottom: 0.8rem;
   background: linear-gradient(to right, #0070f3, #00c6ff);
@@ -24,7 +30,8 @@
 .subtitle {
   font-size: 1.15rem;
   color: #888;
-  margin-bottom: 4rem;            /* MORE SPACE */
+  margin-bottom: 4rem;
+  /* MORE SPACE */
   text-align: center;
   max-width: 520px;
   line-height: 1.6;
@@ -34,13 +41,24 @@
 
 .cardContainer {
   display: flex;
-  gap: 3rem;                      /* more horizontal air */
+  gap: 3rem;
+  /* more horizontal air */
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  /* Space between inputs */
+  width: 100%;
+}
+
 .field {
   display: flex;
-  flex-direction: column;   /* FORCE vertical stacking */
+  flex-direction: column;
+  /* FORCE vertical stacking */
   align-items: stretch;
 }
 
@@ -57,10 +75,27 @@
   padding: 0.65rem 0.75rem;
   color: #e6edf3;
   font-size: 0.95rem;
+  caret-color: #0070f3;
+  /* Brand color cursor */
+  text-shadow: 0 0 5px rgba(0, 112, 243, 0.3);
+  /* Subtle glow on text */
+  transition: all 0.3s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #0070f3;
+  background: rgba(255, 255, 255, 0.08);
+  /* Slightly lighter */
+  box-shadow: 0 0 0 4px rgba(0, 118, 255, 0.1);
+  /* Glow ring */
+  transform: scale(1.01);
+  /* Subtle pop */
 }
 
 .field label {
-  display: block;           /* IMPORTANT */
+  display: block;
+  /* IMPORTANT */
   font-size: 0.75rem;
   color: #9da7b3;
   margin-bottom: 0.5rem;
@@ -70,43 +105,190 @@
 
 /* --- Card --- */
 
+/* --- Card --- */
+
+/* --- Card --- */
+
 .card {
   background: #111;
   border: 1px solid #333;
-  border-radius: 14px;
-  padding: 2.8rem 2.5rem;         /* KEY: more internal space */
-  width: 340px;                   /* wider = calmer */
+  border-radius: 12px;
+  padding: 3.5rem 3rem;
+  /* More internal space */
+  width: 420px;
+  /* Slightly wider for comfort */
   text-align: center;
-  cursor: pointer;
+  cursor: default;
   transition: transform 0.25s ease, border-color 0.25s ease;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  /* Matches .fields gap */
 }
 
 .card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   border-color: #0070f3;
 }
 
 /* --- Card content --- */
 
 .card h2 {
-  margin-bottom: 1.4rem;
-  font-size: 1.4rem;
-  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .card p {
-  color: #aaa;
-  margin-bottom: 2.4rem;          /* MORE breathing room */
-  line-height: 1.6;
+  color: #a1a1aa;
+  margin: 0;
+  line-height: 1.5;
   font-size: 0.95rem;
 }
 
-/* --- Button --- */
-.register {
+/* --- Fields --- */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
   margin-top: 0.5rem;
-  font-size: 0.5rem;
-  color: #888;
-  text-align: right;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  /* Slightly larger label */
+  color: #d4d4d8;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  /* Taller input */
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #0070f3;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 4px rgba(0, 112, 243, 0.15);
+}
+
+/* --- Button --- */
+
+.card button {
+  width: 100%;
+  margin-top: 0;
+  /* Remove extra margin */
+  background: #0070f3;
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  /* Taller button */
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.card button:hover {
+  background: linear-gradient(90deg, #0070f3 0%, #00c6ff 100%);
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 118, 255, 0.25);
+}
+
+.register {
+  font-size: 0.9rem;
+  color: #a1a1aa;
+  text-align: center;
+  margin-top: 0;
+  /* Let gap handle spacing */
+}
+
+.infoContainer {
+  margin-top: 0;
+  /* Let gap handle spacing */
+  margin-bottom: 0;
+  /* Even spacing between button and register text */
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.infoIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #444;
+  color: #666;
+  font-size: 11px;
+  font-family: var(--font-system-mono);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all 0.3s ease;
+}
+
+.infoIcon:hover {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(135deg, #0070f3, #00c6ff);
+  box-shadow: 0 0 15px rgba(0, 118, 255, 0.6);
+  transform: scale(1.1);
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: calc(100% + 12px);
+  /* Show *below* the icon */
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+  background-color: #111;
+  color: #ccc;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  border: 1px solid #333;
+  transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  /* Arrow at top of tooltip (pointing up) */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #111 transparent;
+}
+
+.infoContainer:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .register span {
@@ -130,8 +312,9 @@
   color: #fff;
   font-size: 0.95rem;
 
-  appearance: none;            /* remove default arrow */
-  background-image: 
+  appearance: none;
+  /* remove default arrow */
+  background-image:
     linear-gradient(45deg, transparent 50%, #9ca3af 50%),
     linear-gradient(135deg, #9ca3af 50%, transparent 50%);
   background-position:
@@ -151,17 +334,34 @@
 
 
 .card button {
+  display: block;
+  width: 100%;
+  margin: 0;
   background: #0070f3;
   color: white;
   border: none;
-  padding: 0.85rem 2rem;          /* bigger click target */
+  padding: 0.95rem 1.5rem;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card button:hover {
-  background: #1771c0;
+  background: linear-gradient(90deg, #0070f3 0%, #00c6ff 100%);
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 118, 255, 0.3);
+}
+
+@keyframes flyInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

@@ -48,10 +48,10 @@ export default function SellerDashboard() {
     if (!user) return;
 
     const res = await fetch(`${API_BASE}/stats/my-agents/${user.id}`, {
-    headers: {
-      "ngrok-skip-browser-warning": "69420", // The value can be anything
-    },
-  });
+      headers: {
+        "ngrok-skip-browser-warning": "69420", // The value can be anything
+      },
+    });
     if (!res.ok) return;
 
     const data = await res.json();
@@ -63,10 +63,10 @@ export default function SellerDashboard() {
     if (!user) return;
 
     const res = await fetch(`${API_BASE}/stats/seller-tasks/${user.id}`, {
-    headers: {
-      "ngrok-skip-browser-warning": "69420", // The value can be anything
-    },
-  });
+      headers: {
+        "ngrok-skip-browser-warning": "69420", // The value can be anything
+      },
+    });
     if (!res.ok) return;
 
     const data = await res.json();
@@ -100,66 +100,73 @@ export default function SellerDashboard() {
   /* ================= UI ================= */
   return (
     <div className={styles.dashboard}>
-      <h1>Provider Dashboard</h1>
-
-      {/* ─── Stats ─── */}
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span>Wallet Balance</span>
-          <strong>
-            {credits !== null ? `${credits} credits` : '0'}
-          </strong>
+      {/* Header Section */}
+      <div className={styles.header}>
+        <div className={styles.titleWrapper}>
+          <h1 className={styles.providerText}>Provider</h1>
+          <h1 className={styles.dashboardText}>Dashboard</h1>
         </div>
 
-        <div className={styles.statCard}>
-          <span>Jobs Completed</span>
-          <strong>{jobsCompleted}</strong>
+        <div className={styles.statsRow}>
+          <div className={styles.statCard}>
+            <span>Wallet Balance</span>
+            <strong>
+              {credits !== null ? `${credits} credits` : '0'}
+            </strong>
+          </div>
+
+          <div className={styles.statCard}>
+            <span>Jobs Completed</span>
+            <strong>{jobsCompleted}</strong>
+          </div>
         </div>
       </div>
 
-      {/* ─── My Agents ─── */}
-      <section className={styles.card}>
-       <h2>My Agents</h2>
-<p className={styles.muted}>Devices registered to your account</p>
+      {/* Cards Grid */}
+      <div className={styles.cardsGrid}>
+        {/* ─── My Agents ─── */}
+        <section className={styles.card}>
+          <h2>My Agents</h2>
+          <p className={styles.muted}>Devices registered to your account</p>
 
+          {agents.length === 0 && (
+            <p className={styles.muted}>[No agents registered]</p>
+          )}
 
-        {agents.length === 0 && (
-          <p className={styles.muted}>[___No agents registered__]</p>
-        )}
+          <ul className={styles.list}>
+            {agents.map(agent => (
+              <li key={agent.id} className={styles.agentRow}>
+                <div>
+                  <strong className={styles.flowText}>{agent.gpu_model}</strong>
+                  <span className={`${styles.sub} ${styles.flowText}`}>{agent.ram_total}</span>
+                </div>
+                <span className={`${styles.status} ${styles.flowText}`}>
+                  {getStatusLabel(agent.status)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        <ul className={styles.list}>
-          {agents.map(agent => (
-            <li key={agent.id} className={styles.agentRow}>
-              <div>
-                <strong>{agent.gpu_model}</strong>
-                <span className={styles.sub}>{agent.ram_total}</span>
-              </div>
-              <span className={styles.status}>
-                {getStatusLabel(agent.status)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+        {/* ─── Task History ─── */}
+        <section className={styles.card}>
+          <h2>Task History</h2>
+          <p className={styles.muted}>Completed tasks executed by your agents</p>
 
-      {/* ─── Task History ─── */}
-      <section className={styles.card}>
-       <h2>Task History</h2>
-<p className={styles.muted}>Completed tasks executed by your agents</p>
+          {tasks.length === 0 && (
+            <p className={styles.muted}>[No completed tasks yet]</p>
+          )}
 
-        {tasks.length === 0 && (
-          <p className={styles.muted}>[__No completed tasks yet__]</p>
-        )}
-
-        <ul className={styles.list}>
-          {tasks.map(task => (
-            <li key={task.id} className={styles.taskRow}>
-              <span>Job #{task.id}</span>
-              <span className={styles.done}>COMPLETED</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+          <ul className={styles.list}>
+            {tasks.map(task => (
+              <li key={task.id} className={styles.taskRow}>
+                <span className={styles.flowText}>Job #{task.job_id}</span>
+                <span className={`${styles.done} ${styles.flowText}`}>COMPLETED</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }

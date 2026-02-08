@@ -1,0 +1,27 @@
+.wrapper {
+    display: inline-flex;
+    align-items: center;
+}
+
+.cursor {
+    display: inline-block;
+    width: 2px;
+    background-color: #0070f3;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+    height: 1.2em;
+    /* Adjust to match font size */
+    vertical-align: middle;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}

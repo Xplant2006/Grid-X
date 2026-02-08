@@ -1,26 +1,69 @@
 .dashboard {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    flex: 1;
     background-color: #050505;
     color: #fff;
-    font-family: monospace;
+    font-family: var(--font-system-sans);
+    opacity: 0;
+    animation: flyInLeft 0.8s ease-out forwards;
+    overflow: hidden;
 }
 
 .header {
-    border-bottom: 1px solid #333;
-    padding: 1rem 2rem;
-     margin-bottom: 2rem;
+    border: 1px solid #1f1f1f;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    padding: 2rem 3rem;
+    margin-bottom: 3rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #111;
+    background: #0b0b0b;
 }
 
-.header h1 {
+.headerContent {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 2rem;
+}
+
+.headerContent p {
     margin: 0;
-    font-size: 1.2rem;
-    color: #0070f3;
+    padding-bottom: 6px;
+    /* Visual baseline alignment */
+    color: #888;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.titleWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1;
+}
+
+.scientistText {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #888;
+    background: linear-gradient(90deg, #0070f3 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.8;
+}
+
+.workstationText {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #0070f3 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
 }
 
 .stats {
@@ -34,49 +77,62 @@
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 300px 1fr;
-    gap: 1px;
-    background: #333;
-    /* border color */
+    gap: 1.5rem;
+    background: transparent;
+    /* remove border bg */
+    padding: 1rem;
+    min-height: 0;
     overflow: hidden;
 }
 
 .panel {
     background: #0a0a0a;
-    padding: 1rem;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border: 1px solid #333;
+    border-radius: 12px;
+    min-height: 0;
 }
 
 .panel h2 {
     font-size: 0.9rem;
     color: #666;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    /* increased spacing */
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .wallet {
-  margin-top: 1rem;
-  padding: 1rem 1.4rem;
-  background: #0f0f0f;
-  border: 1px solid #222;
-  border-radius: 12px;
-  width: fit-content;
+    margin-top: 1rem;
+    padding: 1rem 1.4rem;
+    background: #0f0f0f;
+    border: 1px solid #222;
+    border-radius: 12px;
+    width: fit-content;
+    /* Smooth transition for the glow */
+    transition: all 0.3s ease;
+}
+
+.wallet:hover {
+    border-color: #0070f3;
+    box-shadow: 0 0 15px rgba(0, 118, 255, 0.3), 0 0 30px rgba(0, 198, 255, 0.2);
 }
 
 .wallet span {
-  display: block;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.4rem;
+    display: block;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
 }
 
 .wallet strong {
-  font-size: 1.4rem;
-  font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 600;
 }
 
 
@@ -86,7 +142,7 @@
     background: #111;
     border: none;
     color: #d4d4d4;
-    font-family: 'Consolas', monospace;
+    font-family: var(--font-system-mono);
     font-size: 14px;
     padding: 1rem;
     resize: none;
@@ -99,8 +155,15 @@
     border: 1px dashed #444;
     padding: 1.5rem;
     margin-bottom: 1rem;
-    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-radius: 12px;
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.uploadBox:hover {
+    border-color: #0070f3;
+    box-shadow: 0 0 15px rgba(0, 118, 255, 0.3), 0 0 30px rgba(0, 198, 255, 0.2);
 }
 
 .uploadBox label {
@@ -113,11 +176,17 @@
 .activeNodesList {
     background: #111;
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
     flex: 1;
     overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+.activeNodesList:hover {
+    border-color: #0070f3;
+    box-shadow: 0 0 15px rgba(0, 118, 255, 0.3), 0 0 30px rgba(0, 198, 255, 0.2);
 }
 
 .activeNodesList h3 {
@@ -149,7 +218,7 @@
     background: #0070f3;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
     margin-top: auto;
@@ -186,74 +255,141 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
 }
 
 .card {
-  background: #0f0f0f;
-  border: 1px solid #222;
-  border-radius: 12px;
-  padding: 1.5rem;
+    background: #0f0f0f;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 2.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.card:hover {
+    border-color: #0070f3;
+    box-shadow: 0 0 15px rgba(0, 118, 255, 0.3), 0 0 30px rgba(0, 198, 255, 0.2);
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+
+    color: #fff;
+    position: relative;
+    display: inline-block;
+}
+
+.card h2::after {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 4px;
+    /* Small line */
+    background: linear-gradient(90deg, #0070f3 0%, #00c6ff 100%);
+    margin-top: 0.5rem;
+    border-radius: 2px;
 }
 
 .input {
-  width: 100%;
-  margin-bottom: 0.8rem;
-  padding: 0.6rem;
-  background: #111;
-  border: 1px solid #333;
-  color: #fff;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0.6rem;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
 }
 
 .file {
-  display: block;
-  font-size: 0.8rem;
-  margin-bottom: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    color: #a1a1aa;
 }
 
 .primaryBtn {
-  width: 100%;
-  margin-top: 1rem;
-  padding: 0.7rem;
-  background: #0070f3;
-  border: none;
-  color: white;
-  font-weight: 600;
-  border-radius: 6px;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.7rem;
+    background: #0070f3;
+    /* Solid blue default */
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+.primaryBtn:hover {
+    background: linear-gradient(90deg, #0070f3 0%, #00c6ff 100%);
+    box-shadow: 0 0 20px rgba(0, 118, 255, 0.5), 0 0 40px rgba(0, 118, 255, 0.3);
+    transform: scale(1.02);
+}
+
+@keyframes flow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.flowText {
+    background: linear-gradient(60deg, #0070f3, #00c6ff, #ffffff, #0070f3);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: flow 4s ease infinite;
 }
 
 .list {
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
 }
 
 .jobItem,
 .agentItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
 }
 
 .badge {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  background: #1f2937;
-  margin-left: 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: #1f2937;
+    margin-left: 0.5rem;
 }
 
 .muted {
-  color: #777;
-  font-size: 0.85rem;
+    color: #777;
+    font-size: 0.85rem;
 }
 
 .terminal {
     flex: 1;
     color: #00ff88;
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-system-mono);
     font-size: 13px;
     line-height: 1.5;
     overflow-y: auto;
@@ -270,5 +406,17 @@
 @keyframes blink {
     50% {
         opacity: 0;
+    }
+}
+
+@keyframes flyInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
     }
 }

@@ -1,9 +1,12 @@
 /* Sidebar container */
 .sidebar {
   width: 260px;
-  min-height: 100vh;
+  height: calc(100vh - 2rem);
+  margin: 1rem;
   background-color: #0b0b0b;
-  border-right: 1px solid #1f1f1f;
+  border: 1px solid #1f1f1f;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 
   padding: 1.8rem 1.4rem;
 
@@ -21,13 +24,17 @@
   padding: 1.2rem;
   border-radius: 10px;
 
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.04),
-    rgba(255, 255, 255, 0.01)
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.01));
 
   border: 1px solid #222;
+  transition: all 0.3s ease;
+}
+
+.userBlock:hover {
+  border-color: #0070f3;
+  box-shadow: 0 0 15px rgba(0, 118, 255, 0.3), 0 0 30px rgba(0, 198, 255, 0.2);
 }
 
 /* Email */

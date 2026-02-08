@@ -26,14 +26,14 @@ export default function Home() {
           <Link href="/login" className={`${styles.btn} ${styles.primary}`}>
             Get Started
           </Link>
-          <Link href="/docs" className={`${styles.btn} ${styles.secondary}`}>
+          <Link href="/doc.html" className={`${styles.btn} ${styles.secondary}`}>
             Documentation
           </Link>
         </div>
       </main>
 
       <footer className={styles.footer}>
-        Demo
+        © 2026 PizzaParty™. Built for Pizza.
       </footer>
     </div>
   );

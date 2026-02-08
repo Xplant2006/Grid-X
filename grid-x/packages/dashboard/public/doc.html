@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid-X Protocol | Unified Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary-cyan: #00f0ff;
+            --primary-blue: #0070f3;
+            --sidebar-width: 300px;
+            --text-main: #e0e0e0;
+            --text-dim: #94a3b8;
+            --bg-deep: #050505;
+            --bg-surface: #0f172a;
+            --border-color: #1e293b;
+            --code-bg: #010409;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 2rem 1.2rem;
+        }
+
+        aside h2 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--primary-cyan);
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+        }
+
+        aside nav ul { list-style: none; padding: 0; margin: 0; }
+        .nav-group-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 1.5rem 0 0.5rem 0.5rem;
+            display: block;
+            opacity: 0.6;
+        }
+
+        aside nav a { 
+            display: block; 
+            padding: 0.5rem 0.8rem; 
+            color: var(--text-dim); 
+            text-decoration: none; 
+            font-size: 0.9rem;
+            transition: 0.2s;
+            border-radius: 4px;
+        }
+
+        aside nav a:hover { color: var(--primary-cyan); background: rgba(0, 240, 255, 0.05); }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-width);
+            padding: 4rem 5rem;
+            max-width: 1050px;
+            width: 100%;
+        }
+
+        section { margin-bottom: 5rem; scroll-margin-top: 2rem; }
+        h1 { font-size: 2.8rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+        h2 { font-size: 1.8rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem; }
+        h3 { font-size: 1.3rem; color: var(--primary-cyan); margin-top: 2rem; }
+        
+        p, li { color: var(--text-dim); font-size: 1.05rem; }
+        ul { padding-left: 1.2rem; }
+
+        /* Components */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .feature-item {
+            background: var(--bg-surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .feature-item strong { color: var(--primary-cyan); display: block; margin-bottom: 0.5rem; }
+
+        code { 
+            background: #1e293b; 
+            padding: 0.2rem 0.4rem; 
+            border-radius: 4px; 
+            color: #38bdf8;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+
+        pre { 
+            background: var(--code-bg); 
+            padding: 1.5rem; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            color: #d1d5db;
+        }
+
+        .mermaid { background: white; padding: 2rem; border-radius: 10px; margin: 2rem 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        table th { background: #1e293b; color: #fff; }
+    </style>
+</head>
+<body>
+
+<aside>
+    <h2>Grid-X Protocol</h2>
+    <nav>
+        <ul>
+            <span class="nav-group-title">OVERVIEW</span>
+            <li><a href="#intro">Vision & Features</a></li>
+            <li><a href="#how-it-works">Execution Logic</a></li>
+            
+            <span class="nav-group-title">SYSTEM SETUP</span>
+            <li><a href="#prereqs">Prerequisites</a></li>
+            <li><a href="#installation">Core Installation</a></li>
+            <li><a href="#env-config">Environment Variables</a></li>
+            
+            <span class="nav-group-title">WORKER OPERATIONS</span>
+            <li><a href="#worker-setup">Worker Setup Guide</a></li>
+            <li><a href="#worker-limits">Resource Limits</a></li>
+            
+            <span class="nav-group-title">DEVELOPMENT</span>
+            <li><a href="#structure">Project Structure</a></li>
+            <li><a href="#security">Security Protocol</a></li>
+            <li><a href="#trouble">Troubleshooting</a></li>
+        </ul>
+    </nav>
+</aside>
+
+<main>
+    <section id="intro">
+        <h1>Grid-X Unified Guide</h1>
+        <p>A distributed federated learning system architected for collaborative machine learning across isolated provider nodes without raw data exposure.</p>
+
+        <div class="feature-grid">
+            <div class="feature-item">
+                <strong>Federated Learning</strong>
+                Utilizes FedAvg algorithm to aggregate local gradients into a global model.
+            </div>
+            <div class="feature-item">
+                <strong>Secure Execution</strong>
+                Docker-based sandboxing ensures user scripts cannot access provider hosts.
+            </div>
+            <div class="feature-item">
+                <strong>Distributed Storage</strong>
+                Supabase integration for robust, high-availability file and model management.
+            </div>
+            <div class="feature-item">
+                <strong>Automated Partitioning</strong>
+                Intelligent CSV splitting distributes data shards across the available mesh.
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works">
+        <h2>System Architecture</h2>
+        <p>The Grid-X lifecycle ensures data privacy by moving compute to the data, rather than the data to a central server.</p>
+        
+        
+
+[Image of federated learning architecture]
+
+
+        <div class="mermaid">
+        graph TD
+            User[Researcher] -->|Uploads Script/CSV| Hub[FastAPI Backend]
+            Hub -->|Splits Data| S3[Supabase Storage]
+            Agent1[Worker 1] -->|Poll| Hub
+            Agent2[Worker 2] -->|Poll| Hub
+            Hub -->|Assign Task| Agent1
+            Agent1 -->|Exec in Docker| Result1[Weights]
+            Result1 -->|Upload| Hub
+            Hub -->|FedAvg Aggregation| Final[Global Model]
+        </div>
+    </section>
+
+    <section id="installation">
+        <h2>Core Installation</h2>
+        <p>Follow these steps to initialize the Control Plane (Backend) and Data Plane (Worker).</p>
+        
+        <h3>1. Repository Initialization</h3>
+        <pre><code>git clone https://github.com/YOUR_USERNAME/Grid-X.git
+cd Grid-X
+python3 -m venv .venv
+source .venv/bin/activate</code></pre>
+
+        <h3>2. Dependency Mapping</h3>
+        <pre><code># Install Protocol Layers
+pip install -r backend/requirements.txt
+pip install -r worker/requirements.txt</code></pre>
+
+        <h3>3. Execution Environment</h3>
+        <pre><code>chmod +x build_docker.sh
+./build_docker.sh</code></pre>
+    </section>
+
+    <section id="env-config">
+        <h2>Environment Configuration</h2>
+        <p>A <code>.env</code> file is required for backend orchestration and cloud storage connectivity.</p>
+        <pre><code>SUPABASE_URL=your_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_key
+SUPABASE_BUCKET_NAME=gridx-files</code></pre>
+    </section>
+
+    <section id="worker-setup">
+        <h2>Worker Setup Guide</h2>
+        <p>Provision your idle hardware to the mesh. The worker agent manages polling and Docker lifecycle.</p>
+        
+        
+
+        <pre><code># Initialize Worker Node
+export BACKEND_URL="http://localhost:8000"
+export AGENT_ID="node_alpha_01"
+python worker/main.py</code></pre>
+
+        <h3>Resource Constraints</h3>
+        <p>Configure hardware limits in <code>worker_config.env</code> to prevent host exhaustion.</p>
+        <table>
+            <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+            <tr><td>WORKER_CPU_LIMIT</td><td>1.0</td><td>Max vCPU cores per task</td></tr>
+            <tr><td>WORKER_MEMORY_LIMIT</td><td>2048</td><td>Max RAM in MB per task</td></tr>
+            <tr><td>POLL_INTERVAL</td><td>10</td><td>Seconds between task requests</td></tr>
+        </table>
+    </section>
+
+    <section id="#structure">
+        <h2>Project Anatomy</h2>
+        <pre><code>Grid-X/
+├── backend/            # FastAPI Control Plane
+├── worker/             # Agent Execution Layer
+├── tests/              # Integration Suites
+├── Dockerfile.base     # Sandbox Definition
+└── .env.example        # Configuration Template</code></pre>
+    </section>
+
+    <section id="security">
+        <h2>Security Protocol</h2>
+        <ul>
+            <li><strong>Data At Rest:</strong> AES-256 encryption on Supabase storage buckets.</li>
+            <li><strong>Data In Flight:</strong> All model weights are transferred via TLS-encrypted streams.</li>
+            <li><strong>Sandbox:</strong> Non-privileged Docker execution prevents container escape; network access is disabled during <code>exec</code>.</li>
+        </ul>
+    </section>
+
+    <section id="trouble">
+        <h2>Troubleshooting Matrix</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Symptom</th>
+                    <th>Root Cause</th>
+                    <th>Resolution</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Docker Socket Error</td>
+                    <td>Permission mismatch</td>
+                    <td><code>sudo usermod -aG docker $USER</code></td>
+                </tr>
+                <tr>
+                    <td>Supabase 403</td>
+                    <td>Role key mismatch</td>
+                    <td>Use <code>service_role</code> key, not <code>anon</code>.</td>
+                </tr>
+                <tr>
+                    <td>Empty Task Queue</td>
+                    <td>CSV Partition failure</td>
+                    <td>Check backend logs for Pandas split errors.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer style="margin-top: 5rem; padding-top: 2rem; border-top: 1px solid var(--border-color); color: var(--text-dim); font-size: 0.8rem; text-align: center;">
+        Grid-X Distributed Mesh | 2026 Technical Specification | Open-Source Federated Learning Infrastructure
+    </footer>
+</main>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+
+</body>
+</html>
